@@ -32,9 +32,16 @@ Regenerate from `public/logo.svg`:
 npm run pwa-assets
 ```
 
-## Deploy (Vercel)
+## Deploy (Cloudflare Pages)
 
-`vercel.json` is framework-preset `vite`. Push to GitHub, import project, deploy. No env vars required.
+In the Cloudflare dashboard → Pages → Connect to Git → select `MTG-FIN-TrackerV2`:
+
+- Framework preset: **Vite**
+- Build command: `npm run build`
+- Output directory: `dist`
+- Node version: `20` or `22`
+
+`public/_headers` sets security + cache headers. `public/_redirects` routes all paths to `index.html` for SPA.
 
 ## Gist Sync
 
