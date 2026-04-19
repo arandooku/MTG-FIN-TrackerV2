@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../ui/dialog';
 import type { Card as CardT } from '@/lib/schemas';
 import { useCollectionStore } from '@/store/collection';
@@ -512,7 +512,7 @@ function VariantChips({
     'collector-foil',
   ];
 
-  const rows: JSX.Element[] = [];
+  const rows: ReactElement[] = [];
 
   if (mainCard) {
     const mOwned = hasRegularOwned(mainCard);
