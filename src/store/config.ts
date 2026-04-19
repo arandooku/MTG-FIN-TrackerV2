@@ -14,6 +14,9 @@ interface ConfigState {
   ocrSpaceKey: string;
   setBinder: (cfg: Partial<Config>) => void;
   applyPreset: (presetName: string, totalCards: number) => void;
+  setCustomGrid: (rows: number, cols: number, totalCards: number) => void;
+  setCollectorBinder: (on: boolean) => void;
+  markConfigured: (totalCards: number) => void;
   setMuteSound: (v: boolean) => void;
   setMuteCelebration: (v: boolean) => void;
   setCurrency: (c: 'USD' | 'MYR') => void;
@@ -47,21 +50,49 @@ export const useConfigStore = create<ConfigState>()(
           return { binder: parsed.success ? parsed.data : s.binder };
         }),
       applyPreset: (presetName, totalCards) =>
-        set(() => {
+        set((s) => {
           const preset = BINDER_PRESETS.find((p) => p.name === presetName);
           if (!preset) return {};
           return {
             binder: {
+              ...s.binder,
               gridRows: preset.gridRows,
               gridCols: preset.gridCols,
               slotsPerPage: preset.slotsPerPage,
               pageCount: calcPageCount(totalCards, preset.slotsPerPage),
               presetName: preset.name,
-              scope: { mainSet: true, collectorBinder: false },
-              configured: true,
             },
           };
         }),
+      setCustomGrid: (rows, cols, totalCards) =>
+        set((s) => {
+          const spp = Math.max(1, rows * cols);
+          return {
+            binder: {
+              ...s.binder,
+              gridRows: rows,
+              gridCols: cols,
+              slotsPerPage: spp,
+              pageCount: calcPageCount(totalCards, spp),
+              presetName: 'Custom',
+            },
+          };
+        }),
+      setCollectorBinder: (on) =>
+        set((s) => ({
+          binder: {
+            ...s.binder,
+            scope: { ...s.binder.scope, collectorBinder: on },
+          },
+        })),
+      markConfigured: (totalCards) =>
+        set((s) => ({
+          binder: {
+            ...s.binder,
+            pageCount: calcPageCount(totalCards, s.binder.slotsPerPage),
+            configured: true,
+          },
+        })),
       setMuteSound: (v) => set({ muteSound: v }),
       setMuteCelebration: (v) => set({ muteCelebration: v }),
       setCurrency: (c) => set({ currency: c }),

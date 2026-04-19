@@ -8,6 +8,7 @@ import { useCollectionStore } from '@/store/collection';
 import { toast } from '@/store/toast';
 import { BINDER_PRESETS } from '@/lib/binder';
 import { useAllCards } from '@/hooks/useCards';
+import { BinderWizard } from '../BinderWizard';
 
 export function Settings() {
   const cfg = useConfigStore();
@@ -44,6 +45,10 @@ export function Settings() {
       variant: err ? 'error' : 'success',
     });
   };
+
+  if (!cfg.binder.configured) {
+    return <BinderWizard onDone={() => { /* config now configured; tab stays */ }} />;
+  }
 
   return (
     <div className="space-y-4">

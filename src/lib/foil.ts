@@ -71,3 +71,37 @@ export function getCardVariantInfo(card: Card): VariantInfo {
   if (isShowcase(card)) return { label: 'Showcase', short: 'Show' };
   return { label: '', short: 'Main' };
 }
+
+export type VdotKind =
+  | 'regular'
+  | 'foil'
+  | 'ext'
+  | 'ext-foil'
+  | 'showcase'
+  | 'showcase-foil'
+  | 'surge'
+  | 'chocobo'
+  | 'collector'
+  | 'collector-foil';
+
+export function vdotKind(card: Card | null): VdotKind {
+  if (!card) return 'regular';
+  if (isSurgeFoil(card)) return 'surge';
+  if (isChocoboTrack(card)) return 'chocobo';
+  if (isExtendedArt(card)) return 'ext';
+  if (isShowcase(card)) return 'showcase';
+  if (Number.parseInt(card.collector_number, 10) > 309) return 'collector';
+  return 'regular';
+}
+
+export function vdotFoilKind(card: Card | null): VdotKind {
+  if (!card) return 'foil';
+  if (isExtendedArt(card)) return 'ext-foil';
+  if (isShowcase(card)) return 'showcase-foil';
+  if (Number.parseInt(card.collector_number, 10) > 309) return 'collector-foil';
+  return 'foil';
+}
+
+export function isInherentlyFoil(card: Card): boolean {
+  return isSurgeFoil(card) || isChocoboTrack(card);
+}

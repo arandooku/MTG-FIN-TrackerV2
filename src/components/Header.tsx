@@ -1,31 +1,69 @@
-import { Moon, Sun } from 'lucide-react';
-import { Button } from './ui/button';
-import { useThemeStore } from '@/store/theme';
+import { useMemo } from 'react';
 import { useSyncStore } from '@/store/sync';
+import { useCollectionStore } from '@/store/collection';
+import { useAllCards } from '@/hooks/useCards';
 import { relativeTime } from '@/lib/utils';
 
 export function Header() {
-  const mode = useThemeStore((s) => s.mode);
-  const toggle = useThemeStore((s) => s.toggle);
   const lastSyncedAt = useSyncStore((s) => s.lastSyncedAt);
   const isSyncing = useSyncStore((s) => s.isSyncing);
+  const owned = useCollectionStore((s) => s.owned);
+  const { main } = useAllCards();
+
+  const hud = useMemo(() => {
+    const ownedSet = new Set(owned);
+    const total = main.length || 1;
+    const pct = (ownedSet.size / total) * 100;
+    return {
+      pctLabel: `${pct.toFixed(0)}%`,
+      pctNum: pct,
+      unique: ownedSet.size,
+      total: main.length,
+    };
+  }, [owned, main]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <span className="inline-block h-6 w-6 rounded bg-gradient-to-br from-purple-500 to-indigo-600 shadow-inner" />
-          <h1 className="font-[Cinzel] text-lg font-semibold tracking-wide">FIN Binder</h1>
+    <header className="brand-header">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-2 sm:py-3">
+        <div className="brand-logo-box">
+          <span className="brand-logo-text">FIN</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          <div className="brand-title">
+            <span className="gold">Final Fantasy</span> MTG Tracker
+            <span className="brand-version">v2.0</span>
+          </div>
+          <div className="brand-subtitle mt-0.5">
+            Main Set — {hud.total || '—'} cards via Play Boosters
+          </div>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--text-muted)]">
           {isSyncing ? (
-            <span>Syncing…</span>
+            <span className="sync-chip syncing">
+              <span className="chip-dot" /> Syncing
+            </span>
           ) : lastSyncedAt ? (
-            <span>Synced {relativeTime(lastSyncedAt)}</span>
+            <span className="sync-chip connected">
+              <span className="chip-dot" /> {relativeTime(lastSyncedAt)}
+            </span>
           ) : null}
-          <Button size="icon" variant="ghost" onClick={toggle} aria-label="Toggle theme">
-            {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
+        </div>
+      </div>
+      <div className="brand-hud mx-auto max-w-6xl">
+        <div className="brand-hud-stat">
+          <span className="brand-hud-val">{hud.unique}</span>
+          <span className="brand-hud-label">Owned</span>
+        </div>
+        <div className="brand-hud-divider" />
+        <div className="brand-hud-stat">
+          <span className="brand-hud-val gold">{hud.pctLabel}</span>
+          <span className="brand-hud-label">Complete</span>
+        </div>
+        <div className="brand-progress-track">
+          <div
+            className="brand-progress-fill"
+            style={{ width: `${Math.min(100, hud.pctNum)}%` }}
+          />
         </div>
       </div>
     </header>

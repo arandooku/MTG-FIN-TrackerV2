@@ -37,3 +37,22 @@ export function debounce<A extends unknown[]>(fn: (...a: A) => void, wait: numbe
 export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
+
+export function scryfallLarge(url: string): string {
+  if (!url) return url;
+  return url
+    .replace('/normal/', '/large/')
+    .replace('/small/', '/large/');
+}
+
+export function scryfallPng(url: string): string {
+  if (!url) return url;
+  return url
+    .replace('/normal/', '/png/')
+    .replace('/large/', '/png/')
+    .replace('/small/', '/png/')
+    .replace(/\.jpg$/, '.png');
+}
+
+export const MTG_CARD_BACK =
+  'https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/f/f8/Magic_card_back.jpg';

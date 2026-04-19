@@ -1,42 +1,70 @@
-import { BookOpen, Clock, Gauge, Package, Settings as Cog, Sparkles } from 'lucide-react';
+import { Gem, Package, Search, BookOpen, MoreHorizontal } from 'lucide-react';
 import type { TabKey } from '@/App';
-import { cn } from '@/lib/utils';
 
 interface TabNavProps {
   active: TabKey;
   onChange: (t: TabKey) => void;
+  onSearch: () => void;
+  onMore: () => void;
 }
 
-const TABS: Array<{ key: TabKey; label: string; icon: typeof Gauge }> = [
-  { key: 'dashboard', label: 'Dashboard', icon: Gauge },
-  { key: 'portfolio', label: 'Portfolio', icon: Package },
-  { key: 'timeline', label: 'Timeline', icon: Clock },
+const TABS: Array<{ key: TabKey; label: string; icon: typeof Gem }> = [
+  { key: 'dashboard', label: 'Home', icon: Gem },
+  { key: 'portfolio', label: 'Value', icon: Package },
   { key: 'binder', label: 'Binder', icon: BookOpen },
-  { key: 'collector', label: 'Collector', icon: Sparkles },
-  { key: 'settings', label: 'Settings', icon: Cog },
 ];
 
-export function TabNav({ active, onChange }: TabNavProps) {
+export function TabNav({ active, onChange, onSearch, onMore }: TabNavProps) {
+  const [home, value, binder] = TABS;
+
   return (
-    <nav className="sticky top-14 z-30 border-b border-border/60 bg-background/80 backdrop-blur md:static">
-      <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-2 py-2 scrollbar-none">
-        {TABS.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange(key)}
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
-              active === key
-                ? 'bg-primary/15 text-primary'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            <span>{label}</span>
-          </button>
-        ))}
+    <nav className="bnav">
+      <div className="bnav-inner">
+        <NavBtn tab={home} active={active} onChange={onChange} />
+        <NavBtn tab={value} active={active} onChange={onChange} />
+        <button
+          type="button"
+          className="bnav-fab"
+          onClick={onSearch}
+          aria-label="Search cards"
+        >
+          <Search className="h-6 w-6" strokeWidth={2.2} />
+          <span className="bnav-fab-label">Search</span>
+        </button>
+        <NavBtn tab={binder} active={active} onChange={onChange} />
+        <button
+          type="button"
+          className="bnav-btn"
+          onClick={onMore}
+          aria-current={
+            active === 'timeline' || active === 'collector' || active === 'settings'
+          }
+        >
+          <MoreHorizontal />
+          <span>More</span>
+        </button>
       </div>
     </nav>
+  );
+}
+
+interface NavBtnProps {
+  tab: (typeof TABS)[number];
+  active: TabKey;
+  onChange: (t: TabKey) => void;
+}
+
+function NavBtn({ tab, active, onChange }: NavBtnProps) {
+  const Icon = tab.icon;
+  return (
+    <button
+      type="button"
+      className="bnav-btn"
+      aria-current={active === tab.key}
+      onClick={() => onChange(tab.key)}
+    >
+      <Icon />
+      <span>{tab.label}</span>
+    </button>
   );
 }

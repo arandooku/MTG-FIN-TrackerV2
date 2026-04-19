@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { Button } from './ui/button';
 import { useConfigStore } from '@/store/config';
 import { useCollectionStore } from '@/store/collection';
 import {
@@ -15,11 +14,13 @@ export function Scanner() {
   const addCard = useCollectionStore((s) => s.addCard);
   const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<string[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const onFile = async (file: File) => {
     setBusy(true);
     setFound([]);
+    setPreviewUrl(URL.createObjectURL(file));
     try {
       let text: string;
       if (engine === 'ocrspace') {
@@ -47,40 +48,78 @@ export function Scanner() {
   };
 
   return (
-    <div className="space-y-3 rounded-md border p-3">
-      <div className="flex items-center gap-2">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void onFile(f);
-          }}
-        />
-        <Button onClick={() => fileRef.current?.click()} disabled={busy}>
-          {busy ? 'Scanning…' : 'Scan Card'}
-        </Button>
-        <span className="text-xs text-muted-foreground">Engine: {engine}</span>
+    <div className="dash-card !p-3">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-display text-sm">Card Scanner</h3>
+        <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
+          Engine: {engine}
+        </span>
       </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void onFile(f);
+        }}
+      />
+
+      <div className="scanner-viewfinder mb-3" onClick={() => fileRef.current?.click()}>
+        {previewUrl ? (
+          <img src={previewUrl} alt="scanned" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-white/60 text-xs">
+            Tap to capture
+          </div>
+        )}
+        <div className="scanner-guide-rect" />
+        <div className="scanner-guide-label">{busy ? 'Scanning…' : 'Frame card · tap to capture'}</div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="btn btn-primary flex-1"
+          onClick={() => fileRef.current?.click()}
+          disabled={busy}
+        >
+          {busy ? 'Scanning…' : '📷 Capture Card'}
+        </button>
+        {previewUrl && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setPreviewUrl(null);
+              setFound([]);
+            }}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+
       {found.length > 0 && (
-        <div className="space-y-1">
-          <div className="text-sm">Detected collector numbers:</div>
-          <div className="flex flex-wrap gap-1">
+        <div className="mt-3">
+          <div className="mb-2 text-[0.65rem] uppercase tracking-widest text-[var(--text-muted)]">
+            Detected
+          </div>
+          <div className="flex flex-wrap gap-1.5">
             {found.map((cn, i) => (
-              <Button
+              <button
                 key={`${cn}-${i}`}
-                size="sm"
-                variant="outline"
+                type="button"
+                className="search-chip search-chip-scan"
                 onClick={() => {
                   addCard(cn, 'scan');
                   toast({ title: `Added #${cn}`, variant: 'success' });
                 }}
               >
                 + #{cn}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
