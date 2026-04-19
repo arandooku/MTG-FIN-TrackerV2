@@ -54,5 +54,4 @@ export function scryfallPng(url: string): string {
     .replace(/\.jpg$/, '.png');
 }
 
-export const MTG_CARD_BACK =
-  'https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/f/f8/Magic_card_back.jpg';
+export const MTG_CARD_BACK = '/card-back.svg';

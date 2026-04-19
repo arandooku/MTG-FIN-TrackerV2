@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 680" width="488" height="680" role="img" aria-label="Magic card back">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#1b1430"/>
+      <stop offset="55%" stop-color="#0d0a1c"/>
+      <stop offset="100%" stop-color="#05040c"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2248"/>
+      <stop offset="100%" stop-color="#0a0616"/>
+    </linearGradient>
+  </defs>
+  <rect width="488" height="680" rx="22" ry="22" fill="url(#edge)"/>
+  <rect x="10" y="10" width="468" height="660" rx="16" ry="16" fill="url(#g)"/>
+  <g fill="none" stroke="#6b55a8" stroke-width="1.4" opacity="0.55">
+    <circle cx="244" cy="300" r="130"/>
+    <circle cx="244" cy="300" r="96"/>
+    <circle cx="244" cy="300" r="60"/>
+  </g>
+  <text x="244" y="310" text-anchor="middle" font-family="Georgia, serif" font-size="58" font-weight="700" fill="#b7a3ff" letter-spacing="4">FIN</text>
+  <text x="244" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#7a6bad" letter-spacing="6">MAGIC · THE GATHERING</text>
+</svg>
