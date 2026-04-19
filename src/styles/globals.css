@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: 'Cinzel', ui-serif, serif;
+  --font-body: 'Rajdhani', ui-sans-serif, system-ui;
+
+  --color-background: oklch(0.98 0.005 260);
+  --color-foreground: oklch(0.15 0.02 260);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.15 0.02 260);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.15 0.02 260);
+  --color-primary: oklch(0.55 0.2 280);
+  --color-primary-foreground: oklch(0.98 0 0);
+  --color-secondary: oklch(0.95 0.01 260);
+  --color-secondary-foreground: oklch(0.2 0.02 260);
+  --color-muted: oklch(0.95 0.01 260);
+  --color-muted-foreground: oklch(0.5 0.02 260);
+  --color-accent: oklch(0.92 0.04 280);
+  --color-accent-foreground: oklch(0.2 0.02 260);
+  --color-destructive: oklch(0.58 0.22 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+  --color-border: oklch(0.9 0.01 260);
+  --color-input: oklch(0.9 0.01 260);
+  --color-ring: oklch(0.55 0.2 280);
+
+  --color-rarity-common: oklch(0.6 0 0);
+  --color-rarity-uncommon: oklch(0.75 0.08 200);
+  --color-rarity-rare: oklch(0.78 0.13 85);
+  --color-rarity-mythic: oklch(0.72 0.2 45);
+}
+
+.dark {
+  --color-background: oklch(0.12 0.015 265);
+  --color-foreground: oklch(0.95 0.01 260);
+  --color-card: oklch(0.16 0.02 265);
+  --color-card-foreground: oklch(0.95 0.01 260);
+  --color-popover: oklch(0.16 0.02 265);
+  --color-popover-foreground: oklch(0.95 0.01 260);
+  --color-primary: oklch(0.7 0.18 285);
+  --color-primary-foreground: oklch(0.15 0.02 265);
+  --color-secondary: oklch(0.22 0.02 265);
+  --color-secondary-foreground: oklch(0.95 0.01 260);
+  --color-muted: oklch(0.22 0.02 265);
+  --color-muted-foreground: oklch(0.65 0.02 260);
+  --color-accent: oklch(0.28 0.05 285);
+  --color-accent-foreground: oklch(0.95 0.01 260);
+  --color-destructive: oklch(0.55 0.2 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+  --color-border: oklch(0.28 0.02 265);
+  --color-input: oklch(0.28 0.02 265);
+  --color-ring: oklch(0.7 0.18 285);
+}
+
+html,
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes foil-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes foil-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
