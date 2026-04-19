@@ -2,9 +2,71 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   MYTHIC OBSIDIAN — design system tokens
+   Dark editorial luxury + crystalline glass.
+   Source of truth for color, type, radii, shadow, easing.
+   Defined first so later blocks can opt-in via var() reference.
+   ============================================================ */
+:root {
+  /* Surfaces */
+  --bg-void: #05060A;
+  --bg-obsidian: #0A0B10;
+  --surface-1: rgba(18, 20, 32, 0.72);
+  --surface-2: rgba(28, 30, 44, 0.86);
+  --surface-raised: rgba(40, 42, 58, 0.92);
+
+  /* Borders */
+  --border-hair: rgba(255, 255, 255, 0.06);
+  --border-soft: rgba(255, 255, 255, 0.10);
+  --border-glow: rgba(170, 200, 255, 0.18);
+
+  /* Ink */
+  --ink-primary: #F3F1E8;
+  --ink-secondary: #C8CBD8;
+  --ink-muted: #9AA0B4;
+  --ink-subtle: #5A6078;
+
+  /* Accents */
+  --accent-crystal: #7FD8E4;
+  --accent-arcane: #B89CFF;
+  --accent-gold: #E8C77A;
+  --accent-mythic: #FF7A5A;
+
+  /* State */
+  --success: #74E0A8;
+  --danger: #FF6B7A;
+  --warn: #F4C56A;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-full: 9999px;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-hair);
+  --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-glow), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-glow-crystal: 0 0 40px rgba(127, 216, 228, 0.22);
+  --shadow-glow-arcane: 0 0 60px rgba(184, 156, 255, 0.20);
+  --shadow-glow-gold: 0 0 40px rgba(232, 199, 122, 0.20);
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Typography stacks (Mythic Obsidian replaces Rajdhani body) */
+  --font-display: "Cinzel", "Trajan Pro", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
 @theme {
-  --font-display: 'Cinzel', ui-serif, serif;
-  --font-body: 'Rajdhani', ui-sans-serif, system-ui;
+  /* Tailwind v4 — wire Mythic Obsidian fonts so utilities pick them up.
+     Original entries (Rajdhani body) replaced; Cinzel display retained. */
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
   --color-background: oklch(0.98 0.005 260);
   --color-foreground: oklch(0.15 0.02 260);
@@ -59,46 +121,50 @@
 
 .dark,
 [data-theme='dark'] {
-  --color-background: oklch(0.12 0.015 265);
-  --color-foreground: oklch(0.95 0.01 260);
-  --color-card: oklch(0.16 0.02 265);
-  --color-card-foreground: oklch(0.95 0.01 260);
-  --color-popover: oklch(0.16 0.02 265);
-  --color-popover-foreground: oklch(0.95 0.01 260);
-  --color-primary: oklch(0.7 0.18 285);
-  --color-primary-foreground: oklch(0.15 0.02 265);
-  --color-secondary: oklch(0.22 0.02 265);
-  --color-secondary-foreground: oklch(0.95 0.01 260);
-  --color-muted: oklch(0.22 0.02 265);
-  --color-muted-foreground: oklch(0.65 0.02 260);
-  --color-accent: oklch(0.28 0.05 285);
-  --color-accent-foreground: oklch(0.95 0.01 260);
-  --color-destructive: oklch(0.55 0.2 25);
-  --color-destructive-foreground: oklch(0.98 0 0);
-  --color-border: oklch(0.28 0.02 265);
-  --color-input: oklch(0.28 0.02 265);
-  --color-ring: oklch(0.7 0.18 285);
+  /* ---- shadcn tokens remapped onto Mythic Obsidian palette ----
+     Names preserved so existing shadcn primitives pick up the new look.
+     Previous oklch values intentionally replaced — kept as named refs. */
+  --color-background: var(--bg-obsidian);
+  --color-foreground: var(--ink-primary);
+  --color-card: var(--surface-1);
+  --color-card-foreground: var(--ink-primary);
+  --color-popover: var(--surface-2);
+  --color-popover-foreground: var(--ink-primary);
+  --color-primary: var(--accent-arcane);
+  --color-primary-foreground: var(--bg-obsidian);
+  --color-secondary: var(--surface-raised);
+  --color-secondary-foreground: var(--ink-primary);
+  --color-muted: var(--surface-1);
+  --color-muted-foreground: var(--ink-muted);
+  --color-accent: var(--accent-crystal);
+  --color-accent-foreground: var(--bg-obsidian);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--ink-primary);
+  --color-border: var(--border-soft);
+  --color-input: var(--border-soft);
+  --color-ring: var(--accent-crystal);
 
-  --bg: #0a0e1a;
-  --surface: #111827;
-  --surface2: #1e2738;
-  --surface3: #2a3448;
-  --accent: #5b7fc7;
-  --accent2: #d4a850;
-  --text: #e0dde4;
-  --text-muted: #8a90a8;
-  --owned-border: #4aad5e;
-  --slot-bg: #0d1220;
-  --shadow: rgba(6, 8, 18, 0.6);
-  --modal-bg: rgba(6, 8, 18, 0.65);
-  --chart-empty: #1a2030;
-  --ff-border: #2e3a52;
-  --ff-border-inner: #1e2840;
-  --ff-glow: rgba(30, 40, 80, 0.2);
-  --gold: #d4a850;
-  --foil-color: #d4a850;
-  --foil-color-bg: rgba(212, 168, 80, 0.1);
-  --ff-panel: linear-gradient(135deg, #101828 0%, #111827 40%, #0d1220 100%);
+  /* ---- legacy V2 vars rerouted onto Mythic Obsidian ---- */
+  --bg: var(--bg-obsidian);
+  --surface: var(--surface-1);
+  --surface2: var(--surface-2);
+  --surface3: var(--surface-raised);
+  --accent: var(--accent-crystal);
+  --accent2: var(--accent-gold);
+  --text: var(--ink-primary);
+  --text-muted: var(--ink-muted);
+  --owned-border: var(--success);
+  --slot-bg: var(--surface-1);
+  --shadow: rgba(0, 0, 0, 0.6);
+  --modal-bg: rgba(5, 6, 10, 0.72);
+  --chart-empty: rgba(255, 255, 255, 0.04);
+  --ff-border: var(--border-glow);
+  --ff-border-inner: var(--border-soft);
+  --ff-glow: rgba(127, 216, 228, 0.18);
+  --gold: var(--accent-gold);
+  --foil-color: var(--accent-crystal);
+  --foil-color-bg: rgba(127, 216, 228, 0.10);
+  --ff-panel: linear-gradient(135deg, rgba(28, 30, 44, 0.86) 0%, rgba(18, 20, 32, 0.72) 100%);
 }
 
 html,
@@ -116,6 +182,140 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
 }
+
+/* ============================================================
+   MYTHIC OBSIDIAN — body typography + aurora + noise
+   Overrides the html/body declarations above for the dark
+   editorial look. Aurora is fixed full-viewport behind content;
+   noise overlay sits above aurora, below all interactive UI.
+   Both layers are pointer-events: none so they never block clicks.
+   ============================================================ */
+html,
+body {
+  font-family: var(--font-body);
+  font-feature-settings: 'ss01', 'cv11';
+  background-color: var(--bg-obsidian);
+  color: var(--ink-primary);
+}
+body {
+  position: relative;
+  isolation: isolate;
+}
+/* Aurora mesh — three soft radial blooms (cyan / arcane / gold) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 50vmax at 20% 10%, rgba(127, 216, 228, 0.14), transparent 60%),
+    radial-gradient(55vmax 45vmax at 80% 20%, rgba(184, 156, 255, 0.12), transparent 62%),
+    radial-gradient(70vmax 50vmax at 50% 110%, rgba(232, 199, 122, 0.10), transparent 65%),
+    var(--bg-obsidian);
+  filter: blur(0.5px);
+}
+/* Film-grain noise overlay — SVG feTurbulence, very low opacity */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    /* Static — no animations attached, but keep visual layer reduced if user prefers calm */
+    filter: none;
+  }
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--ink-primary);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+/* ============================================================
+   MYTHIC OBSIDIAN — utility classes
+   Composable surface, text, glow, and decorative helpers.
+   Use alongside Tailwind utilities. Names are intentionally
+   neutral so future skins can re-skin them via tokens.
+   ============================================================ */
+.glass {
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: var(--surface-1);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-lg);
+}
+.glass-raised {
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.text-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+.text-numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ornate-hr {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, var(--accent-gold) 0%, rgba(232, 199, 122, 0.5) 35%, transparent 100%);
+}
+
+/* Standalone aurora + noise utilities — opt-in for non-body containers
+   (e.g. modal backdrops, hero panels). Body already paints these via
+   ::before / ::after; these classes mirror that for ad-hoc use. */
+.aurora-bg {
+  position: relative;
+  isolation: isolate;
+}
+.aurora-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 50vmax at 20% 10%, rgba(127, 216, 228, 0.14), transparent 60%),
+    radial-gradient(55vmax 45vmax at 80% 20%, rgba(184, 156, 255, 0.12), transparent 62%),
+    radial-gradient(70vmax 50vmax at 50% 110%, rgba(232, 199, 122, 0.10), transparent 65%);
+  filter: blur(0.5px);
+}
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+.glow-crystal { box-shadow: var(--shadow-glow-crystal); }
+.glow-arcane  { box-shadow: var(--shadow-glow-arcane); }
+.glow-gold    { box-shadow: var(--shadow-glow-gold); }
+
 input,
 textarea {
   -webkit-user-select: text;
@@ -192,8 +392,11 @@ h3 {
   50% { box-shadow: 0 0 22px rgba(255, 80, 200, 0.7), inset 0 0 24px rgba(255, 80, 200, 0.35); }
 }
 @keyframes surge-drift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+  0%   { background-position: 50% 50%; opacity: 0.42; }
+  25%  { background-position: 55% 45%; opacity: 0.48; }
+  50%  { background-position: 48% 54%; opacity: 0.52; }
+  75%  { background-position: 44% 47%; opacity: 0.46; }
+  100% { background-position: 50% 50%; opacity: 0.42; }
 }
 @keyframes sync-pulse {
   0%, 100% { opacity: 0.7; }
@@ -310,66 +513,148 @@ h3 {
   50% { opacity: 1; }
 }
 
-/* ============ FOIL OVERLAY (slot/card shimmer) ============ */
-.foil-overlay {
+/* ============ UNIFIED FOIL ENGINE (.foil-fx) ============
+   Single system used by BinderSlot, CardModal, InspectOverlay, CardThumb.
+   Two pseudo-layers:
+     ::before = variant tint / spectral sweep (animated)
+     ::after  = pointer-tracked radial glint
+   Pointer vars (set by parent on hover/drag):
+     --fx-mx / --fx-my  → glint center (0–100%)
+     --fx-bx / --fx-by  → sweep offset (0–100%)
+     --fx-intensity     → 0..1 multiplier (default 1)
+   Offscreen: parent sets data-paused="true" to halt animation.
+*/
+.foil-fx {
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
   overflow: hidden;
   z-index: 4;
+  --fx-mx: 50%;
+  --fx-my: 50%;
+  --fx-bx: 50%;
+  --fx-by: 50%;
+  --fx-intensity: 1;
+  backface-visibility: hidden;
 }
-.foil-overlay::after {
+/* Base iridescent wash — conic spectrum anchored to pointer, hue-cycles slowly.
+   No left-to-right sweep; looks like real holo shifting as the card tilts. */
+.foil-fx::before {
   content: '';
   position: absolute;
-  inset: -20%;
-  background: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(255, 255, 255, 0.4) 48%,
-    rgba(255, 220, 140, 0.55) 50%,
-    rgba(255, 255, 255, 0.4) 52%,
-    transparent 62%
+  inset: 0;
+  background: conic-gradient(
+    from 210deg at var(--fx-mx) var(--fx-my),
+    rgba(255, 80, 120, 0.38),
+    rgba(255, 200, 80, 0.42),
+    rgba(240, 240, 90, 0.44),
+    rgba(100, 230, 150, 0.44),
+    rgba(100, 180, 255, 0.42),
+    rgba(180, 110, 255, 0.40),
+    rgba(255, 100, 200, 0.38),
+    rgba(255, 80, 120, 0.38)
   );
-  background-size: 220% 220%;
   mix-blend-mode: screen;
-  animation: foil-card-shimmer 3.5s linear infinite;
+  opacity: calc(var(--fx-intensity) * 0.7);
+  animation: foil-fx-hue 6s linear infinite;
+  transition: opacity 0.25s ease;
+  will-change: filter;
 }
-.foil-overlay.foil-variant-neon::after {
-  background: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(255, 80, 200, 0.55) 48%,
-    rgba(140, 220, 255, 0.55) 50%,
-    rgba(255, 80, 200, 0.55) 52%,
-    transparent 62%
+/* Bright pointer highlight — moves with --fx-mx / --fx-my. */
+.foil-fx::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--fx-mx) var(--fx-my),
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.18) 18%,
+    transparent 48%
   );
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--fx-intensity) * 0.9);
+  transition: opacity 0.25s ease;
 }
-.foil-overlay.foil-variant-serialized::after {
-  background: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(255, 215, 0, 0.65) 50%,
-    transparent 62%
-  );
+
+/* Variant flavours — tune blend/intensity; base rainbow + hue cycle persist. */
+.foil-fx[data-variant='regular-foil']::before {
+  mix-blend-mode: overlay;
 }
-.foil-overlay.foil-variant-collector::after {
-  background: linear-gradient(
-    115deg,
-    transparent 38%,
-    rgba(200, 220, 255, 0.6) 50%,
-    transparent 62%
-  );
+.foil-fx[data-variant='collector-foil']::before {
+  mix-blend-mode: screen;
+  opacity: calc(var(--fx-intensity) * 0.8);
 }
-.foil-overlay.foil-variant-surge::after {
-  background: linear-gradient(
-    115deg,
-    rgba(91, 127, 199, 0.4) 0%,
-    rgba(212, 168, 80, 0.4) 50%,
-    rgba(91, 127, 199, 0.4) 100%
-  );
-  background-size: 300% 100%;
-  animation: surge-drift 5s linear infinite;
+.foil-fx[data-variant='chocobo-track']::before {
+  mix-blend-mode: hard-light;
+}
+.foil-fx[data-variant='extended-art']::before {
+  mix-blend-mode: hard-light;
+}
+.foil-fx[data-variant='showcase']::before {
+  mix-blend-mode: overlay;
+}
+
+/* Surge-foil — spectral rainbow sweep layered over per-card canvas pattern.
+   Pointer follows with radial highlight; sweep offset moves with --fx-bx/by. */
+.foil-fx[data-variant='surge-foil']::before {
+  background:
+    radial-gradient(
+      ellipse 60% 50% at var(--fx-mx) var(--fx-my),
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.06) 30%,
+      transparent 60%
+    ),
+    linear-gradient(
+      115deg,
+      transparent 16%,
+      rgba(255, 60, 80, 0.24) 26%,
+      rgba(255, 200, 60, 0.28) 34%,
+      rgba(60, 255, 120, 0.28) 42%,
+      rgba(60, 180, 255, 0.32) 50%,
+      rgba(160, 80, 255, 0.28) 58%,
+      rgba(255, 80, 200, 0.24) 66%,
+      transparent 76%
+    ),
+    var(--fx-pattern, var(--surge-foil-bg));
+  background-size: 100% 100%, 360% 360%, cover;
+  background-position: center, var(--fx-bx) var(--fx-by), center;
+  mix-blend-mode: hard-light;
+  filter: saturate(1.35);
+  opacity: calc(var(--fx-intensity) * 0.85);
+  animation: foil-fx-surge 9s ease-in-out infinite;
+}
+.foil-fx[data-variant='surge-foil']::after {
+  mix-blend-mode: screen;
+  opacity: calc(var(--fx-intensity) * 0.6);
+}
+
+/* Outer halo — subtle rainbow rim on surge foil */
+.foil-fx[data-variant='surge-foil'] {
+  box-shadow:
+    inset 0 0 18px rgba(120, 180, 255, 0.22),
+    inset 0 0 6px rgba(200, 140, 255, 0.18);
+}
+
+/* Paused — parent sets data-paused when offscreen */
+.foil-fx[data-paused='true']::before {
+  animation-play-state: paused;
+}
+
+@keyframes foil-fx-surge {
+  0%   { background-position: center, 45% 55%, center; filter: saturate(1.35) hue-rotate(0deg); }
+  50%  { background-position: center, 55% 45%, center; filter: saturate(1.5) hue-rotate(18deg); }
+  100% { background-position: center, 45% 55%, center; filter: saturate(1.35) hue-rotate(0deg); }
+}
+@keyframes foil-fx-hue {
+  0%   { filter: saturate(1.25) hue-rotate(0deg); }
+  100% { filter: saturate(1.25) hue-rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foil-fx::before {
+    animation: none;
+  }
 }
 
 /* Foil glow rings */
@@ -565,6 +850,9 @@ h3 {
   opacity: 0.45;
 }
 .modal-price-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
   border-radius: 8px;
@@ -1602,7 +1890,7 @@ h3 {
 }
 .modal-card-col {
   flex-shrink: 0;
-  width: 170px;
+  width: 240px;
   position: relative;
 }
 .modal-info-col {
@@ -1727,7 +2015,9 @@ h3 {
   backface-visibility: hidden;
   z-index: 1;
 }
-.card-3d .foil-overlay {
+/* CardModal 3D wrapper — foil-fx layer placed on top of img, below badges.
+   Opacity drives in/out animation via inline framer-motion style. */
+.card-3d .foil-fx {
   z-index: 2;
   border-radius: 12px;
 }
@@ -1845,27 +2135,10 @@ h3 {
   backface-visibility: hidden;
   z-index: 1;
 }
-.inspect-foil-overlay {
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  pointer-events: none;
-  backface-visibility: hidden;
-  opacity: 0;
+/* Inspect 3D wrapper — unified foil-fx layer; 14px radius matches image. */
+.inspect-3d .foil-fx {
   z-index: 2;
-}
-.inspect-3d.foil-owned .inspect-foil-overlay {
-  opacity: 0.4;
-  background: linear-gradient(
-    115deg,
-    rgba(255, 220, 140, 0.35) 0%,
-    rgba(255, 80, 200, 0.35) 45%,
-    rgba(140, 220, 255, 0.35) 55%,
-    rgba(80, 180, 80, 0.3) 100%
-  );
-  background-size: 220% 220%;
-  animation: foil-drift 5s ease infinite;
-  mix-blend-mode: hard-light;
+  border-radius: 14px;
 }
 .inspect-controls {
   display: flex;
@@ -1890,7 +2163,7 @@ h3 {
     align-items: center;
   }
   .modal-card-col {
-    width: min(60vw, 220px);
+    width: min(72vw, 280px);
   }
   .modal-info-col {
     width: 100%;
@@ -1901,6 +2174,26 @@ h3 {
   }
   .modal-info-col .modal-actions {
     justify-content: center;
+  }
+}
+
+/* ============ DESKTOP SIZING — binder grid + inspect scaling ============ */
+@media (min-width: 1024px) {
+  /* Cap binder 3x3 grid so slots don't balloon in the widened app frame */
+  .binder-grid {
+    max-width: 900px;
+  }
+  .inspect-card-wrap {
+    width: min(60vw, 520px);
+    max-height: 82vh;
+  }
+}
+@media (min-width: 1440px) {
+  .binder-grid {
+    max-width: 1040px;
+  }
+  .inspect-card-wrap {
+    width: min(55vw, 600px);
   }
 }
 
@@ -2029,5 +2322,283 @@ h3 {
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 6px;
+}
+
+/* ============ MYTHIC OBSIDIAN — dark editorial luxury ============ */
+:root,
+[data-theme='dark'],
+.dark {
+  --bg-obsidian: #07080d;
+  --surface-1: #0d1019;
+  --surface-2: #141826;
+  --ink-primary: #ece7df;
+  --ink-secondary: #b7b2a8;
+  --ink-muted: #8a8578;
+  --ink-subtle: #5a5548;
+  --accent-crystal: #8fd0e8;
+  --accent-arcane: #9b7ee0;
+  --accent-gold: #d4a84a;
+  --accent-gold-bright: #f1c770;
+  --accent-mythic: #f58a3b;
+  --success: #6fb68a;
+  --danger: #d36a6a;
+  --border-hair: rgba(212, 168, 74, 0.18);
+  --border-glow: rgba(212, 168, 74, 0.45);
+}
+
+[data-theme='light'] {
+  --bg-obsidian: #f5f0e6;
+  --surface-1: #efe8d8;
+  --surface-2: #e4dac2;
+  --ink-primary: #2a2212;
+  --ink-secondary: #5a4c2e;
+  --ink-muted: #8a7a58;
+  --ink-subtle: #ada080;
+  --accent-crystal: #3a85a8;
+  --accent-arcane: #6a4fb0;
+  --accent-gold: #a8822a;
+  --accent-gold-bright: #cc8822;
+  --accent-mythic: #c05e1a;
+  --success: #4a8c5e;
+  --danger: #b84848;
+  --border-hair: rgba(153, 102, 34, 0.22);
+  --border-glow: rgba(153, 102, 34, 0.5);
+}
+
+.glass {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+    var(--surface-1);
+  border: 1px solid var(--border-hair);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border-radius: 10px;
+}
+.glass-raised {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+    linear-gradient(140deg, var(--surface-2) 0%, var(--surface-1) 100%);
+  border: 1px solid var(--border-hair);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 6px 20px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border-radius: 12px;
+}
+.text-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.text-numeric {
+  font-family: var(--font-display);
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.ornate-hr {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-hair) 20%,
+    var(--accent-gold) 50%,
+    var(--border-hair) 80%,
+    transparent 100%
+  );
+  opacity: 0.7;
+  margin: 10px 0;
+}
+.ornate-hr::before,
+.ornate-hr::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--accent-gold);
+  box-shadow: 0 0 6px rgba(212, 168, 74, 0.6);
+}
+.ornate-hr::before {
+  left: calc(50% - 30px);
+}
+.ornate-hr::after {
+  right: calc(50% - 30px);
+}
+.glow-crystal {
+  box-shadow:
+    0 0 0 1px rgba(143, 208, 232, 0.4),
+    0 0 18px rgba(143, 208, 232, 0.28);
+}
+.glow-arcane {
+  box-shadow:
+    0 0 0 1px rgba(155, 126, 224, 0.4),
+    0 0 18px rgba(155, 126, 224, 0.28);
+}
+.glow-gold {
+  box-shadow:
+    0 0 0 1px rgba(212, 168, 74, 0.4),
+    0 0 18px rgba(212, 168, 74, 0.3);
+}
+
+/* Mythic Obsidian — section headers & numeric scales */
+.mo-section-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  opacity: 0.85;
+}
+.mo-numeric-hero {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--accent-gold-bright);
+  text-shadow: 0 0 16px rgba(212, 168, 74, 0.3);
+}
+.mo-numeric-lg {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+  line-height: 1.05;
+  color: var(--ink-primary);
+}
+.mo-numeric-md {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  line-height: 1.05;
+  color: var(--accent-gold);
+}
+
+/* Scan viewfinder — crystal corners + sweep line */
+.mo-view-frame {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-obsidian);
+  border: 1px solid var(--border-hair);
+}
+.mo-view-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(212, 168, 74, 0.5));
+}
+.mo-view-corner.tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid var(--accent-gold);
+  border-left: 2px solid var(--accent-gold);
+  border-top-left-radius: 6px;
+}
+.mo-view-corner.tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid var(--accent-gold);
+  border-right: 2px solid var(--accent-gold);
+  border-top-right-radius: 6px;
+}
+.mo-view-corner.bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid var(--accent-gold);
+  border-left: 2px solid var(--accent-gold);
+  border-bottom-left-radius: 6px;
+}
+.mo-view-corner.br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid var(--accent-gold);
+  border-right: 2px solid var(--accent-gold);
+  border-bottom-right-radius: 6px;
+}
+.mo-scan-sweep {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(143, 208, 232, 0.15) 15%,
+    var(--accent-crystal) 50%,
+    rgba(143, 208, 232, 0.15) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px rgba(143, 208, 232, 0.55);
+  animation: mo-sweep 2.4s ease-in-out infinite;
+}
+@keyframes mo-sweep {
+  0% {
+    top: 8%;
+    opacity: 0.2;
+  }
+  40% {
+    opacity: 1;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.2;
+  }
+  100% {
+    top: 8%;
+    opacity: 0;
+  }
+}
+
+/* Ledger rail — vertical hair-line for timeline */
+.mo-ledger {
+  position: relative;
+}
+.mo-ledger::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--border-hair) 10%,
+    var(--border-hair) 90%,
+    transparent
+  );
+}
+.mo-ledger-row {
+  position: relative;
+  padding-left: 32px;
+}
+.mo-ledger-dot {
+  position: absolute;
+  left: 8px;
+  top: 10px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1.5px solid var(--accent-gold);
+  box-shadow: 0 0 6px rgba(212, 168, 74, 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mo-scan-sweep {
+    animation: none;
+    opacity: 0.7;
+    top: 50%;
+  }
 }
 

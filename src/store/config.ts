@@ -7,7 +7,6 @@ type Config = BinderConfig;
 
 interface ConfigState {
   binder: Config;
-  muteSound: boolean;
   muteCelebration: boolean;
   currency: 'USD' | 'MYR';
   ocrEngine: 'tesseract' | 'ocrspace';
@@ -17,7 +16,7 @@ interface ConfigState {
   setCustomGrid: (rows: number, cols: number, totalCards: number) => void;
   setCollectorBinder: (on: boolean) => void;
   markConfigured: (totalCards: number) => void;
-  setMuteSound: (v: boolean) => void;
+  resetOnboarding: () => void;
   setMuteCelebration: (v: boolean) => void;
   setCurrency: (c: 'USD' | 'MYR') => void;
   setOcrEngine: (e: 'tesseract' | 'ocrspace') => void;
@@ -38,7 +37,6 @@ export const useConfigStore = create<ConfigState>()(
   persist(
     (set) => ({
       binder: defaultBinder,
-      muteSound: false,
       muteCelebration: false,
       currency: 'USD',
       ocrEngine: 'tesseract',
@@ -93,7 +91,10 @@ export const useConfigStore = create<ConfigState>()(
             configured: true,
           },
         })),
-      setMuteSound: (v) => set({ muteSound: v }),
+      resetOnboarding: () =>
+        set((s) => ({
+          binder: { ...s.binder, configured: false },
+        })),
       setMuteCelebration: (v) => set({ muteCelebration: v }),
       setCurrency: (c) => set({ currency: c }),
       setOcrEngine: (e) => set({ ocrEngine: e }),

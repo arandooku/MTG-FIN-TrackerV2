@@ -70,16 +70,17 @@ export function VariantChips({
     const isActive = cn === mainCard.collector_number && !foilPreviewActive;
     const isFoilActive = cn === mainCard.collector_number && foilPreviewActive;
     const hasFoil = mainCard.finishes.includes('foil');
+    const cnLabel = `#${mainCard.collector_number}`;
     rows.push(
       <div key={`main-${mainCard.collector_number}`} className="foil-row">
         <button
           type="button"
           className={`foil-chip ${isActive ? 'active' : ''} ${mOwned ? 'owned' : ''}`}
           onClick={() => onSelect(mainCard, false)}
-          title={`#${mainCard.collector_number} Regular`}
+          title={`${cnLabel} Regular`}
         >
           <span className="vdot vdot-regular" />
-          <span className="foil-chip-label">Regular</span>
+          <span className="foil-chip-label">{cnLabel}</span>
           {mOwned && <span className="foil-chip-check">✓</span>}
         </button>
         {hasFoil && (
@@ -87,10 +88,10 @@ export function VariantChips({
             type="button"
             className={`foil-chip ${isFoilActive ? 'active' : ''} ${mFoilOwned ? 'owned' : ''}`}
             onClick={() => onSelect(mainCard, true)}
-            title={`#${mainCard.collector_number} Foil`}
+            title={`${cnLabel} Foil`}
           >
             <span className="vdot vdot-foil" />
-            <span className="foil-chip-label">Foil</span>
+            <span className="foil-chip-label">{cnLabel} (Foil)</span>
             {mFoilOwned && <span className="foil-chip-check">✓</span>}
           </button>
         )}
@@ -100,13 +101,12 @@ export function VariantChips({
 
   variantCards.forEach((v) => {
     const info = getCardVariantInfo(v);
-    const baseLabel = info.label ? info.short : 'Variant';
-    const label = `${baseLabel} #${v.collector_number}`;
     const vHasNonfoil = v.finishes.includes('nonfoil');
     const vHasFoil = v.finishes.includes('foil');
     const isFoilOnly = !vHasNonfoil && vHasFoil;
     const isActive = cn === v.collector_number && !foilPreviewActive;
     const isFoilActive = cn === v.collector_number && foilPreviewActive;
+    const cnLabel = `#${v.collector_number}`;
 
     if (isFoilOnly) {
       const vOwned = hasFoilOwned(v);
@@ -115,11 +115,11 @@ export function VariantChips({
           <button
             type="button"
             className={`foil-chip ${isActive || isFoilActive ? 'active' : ''} ${vOwned ? 'owned' : ''}`}
-            onClick={() => onSelect(v, false)}
-            title={`#${v.collector_number} ${info.label}`}
+            onClick={() => onSelect(v, true)}
+            title={`${cnLabel} ${info.label}`}
           >
             <span className={`vdot vdot-${vdotKind(v)}`} />
-            <span className="foil-chip-label">{label}</span>
+            <span className="foil-chip-label">{cnLabel} (Foil)</span>
             {vOwned && <span className="foil-chip-check">✓</span>}
           </button>
         </div>,
@@ -133,10 +133,10 @@ export function VariantChips({
             type="button"
             className={`foil-chip ${isActive ? 'active' : ''} ${rOwned ? 'owned' : ''}`}
             onClick={() => onSelect(v, false)}
-            title={`#${v.collector_number} ${info.label}`}
+            title={`${cnLabel} ${info.label}`}
           >
             <span className={`vdot vdot-${vdotKind(v)}`} />
-            <span className="foil-chip-label">{label}</span>
+            <span className="foil-chip-label">{cnLabel}</span>
             {rOwned && <span className="foil-chip-check">✓</span>}
           </button>
           {vHasFoil && (
@@ -144,10 +144,10 @@ export function VariantChips({
               type="button"
               className={`foil-chip ${isFoilActive ? 'active' : ''} ${fOwned ? 'owned' : ''}`}
               onClick={() => onSelect(v, true)}
-              title={`#${v.collector_number} ${info.label} Foil`}
+              title={`${cnLabel} ${info.label} Foil`}
             >
               <span className={`vdot vdot-${vdotFoilKind(v)}`} />
-              <span className="foil-chip-label">{label}</span>
+              <span className="foil-chip-label">{cnLabel} (Foil)</span>
               {fOwned && <span className="foil-chip-check">✓</span>}
             </button>
           )}

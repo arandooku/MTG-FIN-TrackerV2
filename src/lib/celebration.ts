@@ -70,6 +70,18 @@ interface Particle {
   color: string;
   size: number;
   life: number;
+  maxLife: number;
+  rot: number;
+  dr: number;
+  shape: 'circle' | 'rect';
+}
+
+const GRAVITY = 0.12;
+const DRAG = 0.985;
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function spawnParticles(
@@ -86,17 +98,22 @@ function spawnParticles(
   const total = cfg.sparkles + cfg.fireworks * 20;
   for (let i = 0; i < total; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 1 + Math.random() * 5;
+    const speed = 2 + Math.random() * 7;
+    const life = 70 + Math.random() * 60;
     parts.push({
       x: anchor.x,
       y: anchor.y,
       dx: Math.cos(angle) * speed,
-      dy: Math.sin(angle) * speed,
+      dy: Math.sin(angle) * speed - 2,
       color: isFoil
-        ? `hsl(${Math.random() * 360}, 90%, 70%)`
+        ? `hsl(${Math.random() * 360}, 95%, 68%)`
         : (cfg.colors[i % cfg.colors.length] ?? '#fff'),
-      size: 1.5 + Math.random() * 3,
-      life: 60 + Math.random() * 60,
+      size: 2 + Math.random() * 3.5,
+      life,
+      maxLife: life,
+      rot: Math.random() * Math.PI * 2,
+      dr: (Math.random() - 0.5) * 0.4,
+      shape: Math.random() < 0.55 ? 'rect' : 'circle',
     });
   }
 
@@ -105,19 +122,31 @@ function spawnParticles(
     if (!ctx) return;
     ctx.clearRect(0, 0, w, h);
     for (const p of parts) {
+      if (p.life <= 0) continue;
+      p.dx *= DRAG;
+      p.dy = p.dy * DRAG + GRAVITY;
       p.x += p.dx;
       p.y += p.dy;
-      p.dy += 0.08;
+      p.rot += p.dr;
       p.life -= 1;
-      ctx.globalAlpha = Math.max(0, p.life / 80);
+      const alpha = Math.max(0, p.life / p.maxLife);
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+      if (p.shape === 'rect') {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillRect(-p.size, -p.size * 0.4, p.size * 2, p.size * 0.8);
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
     frame++;
-    if (frame < 120 && parts.some((p) => p.life > 0)) {
+    if (frame < 150 && parts.some((p) => p.life > 0)) {
       requestAnimationFrame(tick);
     } else {
       ctx.clearRect(0, 0, w, h);
@@ -127,7 +156,7 @@ function spawnParticles(
 }
 
 export function celebrateCard(card: Card, canvas: HTMLCanvasElement | null, foil = false) {
-  if (!canvas) return;
+  if (!canvas || prefersReducedMotion()) return;
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width;
   canvas.height = rect.height;
@@ -137,4 +166,20 @@ export function celebrateCard(card: Card, canvas: HTMLCanvasElement | null, foil
 
 export function rarityConfig(r: string) {
   return CONFIG[pickRarity(r)];
+}
+
+export function spawnGlobalConfetti(rarity: string, foil = false): void {
+  if (typeof document === 'undefined' || prefersReducedMotion()) return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'fx-global-canvas';
+  canvas.style.cssText =
+    'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9998;';
+  document.body.appendChild(canvas);
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const cfg = CONFIG[pickRarity(rarity)];
+  spawnParticles(canvas, { x: w / 2, y: h / 2 }, cfg, foil);
+  window.setTimeout(() => canvas.remove(), 2500);
 }

@@ -20,5 +20,6 @@ Thumbs.db
 
 *.tsbuildinfo
 
-.claude/settings.local.json
+.claude/
 .superpowers/
+reference/

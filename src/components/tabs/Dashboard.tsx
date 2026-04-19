@@ -1,264 +1,720 @@
-import { useMemo, useState } from 'react';
-import { Package, Scan, Search } from 'lucide-react';
-import { CardModal } from '../modals/CardModal';
-import { PackModal } from '../modals/PackModal';
-import { Scanner } from '../Scanner';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import {
+  Layers,
+  ScanLine,
+  Package,
+  Copy,
+  Box,
+  Crown,
+  Plus,
+  Minus,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Gem,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import { GoldDivider, ManaPip } from '../shell/OrnatePanel';
+import { Sparkline } from '../shell/Sparkline';
+import { CardThumb } from '../shell/CardThumb';
 import { useAllCards } from '@/hooks/useCards';
 import { useFx } from '@/hooks/useFx';
 import { useCollectionStore } from '@/store/collection';
 import { useConfigStore } from '@/store/config';
-import { sortByCollector } from '@/lib/binder';
+import { relativeTime } from '@/lib/utils';
+import type { ReactNode } from 'react';
 import type { Card as CardT } from '@/lib/schemas';
 import type { TabKey } from '@/App';
 
 interface DashboardProps {
   onJumpTo: (t: TabKey) => void;
-  onOpenSearch: () => void;
-  onOpenPack: () => void;
+  onPickCard: (c: CardT) => void;
 }
 
-export function Dashboard({ onJumpTo, onOpenSearch, onOpenPack }: DashboardProps) {
+const COLORS = ['W', 'U', 'B', 'R', 'G'] as const;
+const RARITIES = ['common', 'uncommon', 'rare', 'mythic'] as const;
+type Rarity = (typeof RARITIES)[number];
+
+const RARITY_LABEL: Record<Rarity, string> = {
+  common: 'Common',
+  uncommon: 'Uncommon',
+  rare: 'Rare',
+  mythic: 'Mythic',
+};
+
+const RARITY_COLOR: Record<Rarity, string> = {
+  common: 'var(--ink-muted)',
+  uncommon: '#c9d4de',
+  rare: 'var(--accent-gold)',
+  mythic: 'var(--accent-mythic)',
+};
+
+export function Dashboard({ onJumpTo, onPickCard }: DashboardProps) {
   const { main, isLoading } = useAllCards();
   const owned = useCollectionStore((s) => s.owned);
-  const packs = useCollectionStore((s) => s.packs);
   const timeline = useCollectionStore((s) => s.timeline);
-  const foilOwned = useCollectionStore((s) => s.foil);
-  const binder = useConfigStore((s) => s.binder);
+  const packs = useCollectionStore((s) => s.packs);
   const currency = useConfigStore((s) => s.currency);
+  const showCollector = useConfigStore((s) => s.binder.scope.collectorBinder);
   const { data: rate = 4.7 } = useFx();
-  const [openScan, setOpenScan] = useState(false);
-  const [openPackLocal, setOpenPackLocal] = useState(false);
-  const [activeCard, setActiveCard] = useState<CardT | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const stats = useMemo(() => {
     const ownedSet = new Set(owned);
-    const uniqueOwned = ownedSet.size;
     const total = main.length;
     const byCn = new Map(main.map((c) => [c.collector_number, c] as const));
     let valueUsd = 0;
-    let mythics = 0, rares = 0, uncommons = 0, commons = 0;
-    let mythicsTotal = 0, raresTotal = 0, uncommonsTotal = 0, commonsTotal = 0;
+    const byColor: Record<(typeof COLORS)[number], { o: number; t: number }> = {
+      W: { o: 0, t: 0 },
+      U: { o: 0, t: 0 },
+      B: { o: 0, t: 0 },
+      R: { o: 0, t: 0 },
+      G: { o: 0, t: 0 },
+    };
+    const byRarity: Record<Rarity, { o: number; t: number }> = {
+      common: { o: 0, t: 0 },
+      uncommon: { o: 0, t: 0 },
+      rare: { o: 0, t: 0 },
+      mythic: { o: 0, t: 0 },
+    };
     for (const c of main) {
-      if (c.rarity === 'mythic') mythicsTotal++;
-      else if (c.rarity === 'rare') raresTotal++;
-      else if (c.rarity === 'uncommon') uncommonsTotal++;
-      else commonsTotal++;
-    }
-    for (const cn of owned) {
-      const c = byCn.get(cn);
-      if (!c) continue;
-      valueUsd += c.price_usd ?? 0;
+      const cost = c.mana_cost?.toUpperCase() ?? '';
+      for (const col of COLORS) {
+        if (cost.includes(`{${col}}`)) byColor[col].t++;
+      }
+      const r = c.rarity as Rarity;
+      if (byRarity[r]) byRarity[r].t++;
     }
     for (const cn of ownedSet) {
       const c = byCn.get(cn);
       if (!c) continue;
-      if (c.rarity === 'mythic') mythics++;
-      else if (c.rarity === 'rare') rares++;
-      else if (c.rarity === 'uncommon') uncommons++;
-      else commons++;
+      valueUsd += c.price_usd ?? 0;
+      const cost = c.mana_cost?.toUpperCase() ?? '';
+      for (const col of COLORS) {
+        if (cost.includes(`{${col}}`)) byColor[col].o++;
+      }
+      const r = c.rarity as Rarity;
+      if (byRarity[r]) byRarity[r].o++;
     }
-    const foilCount = Object.values(foilOwned).reduce((n, v) => n + v.length, 0);
     return {
-      uniqueOwned,
-      totalCards: owned.length,
-      completion: total ? (uniqueOwned / total) * 100 : 0,
-      setSize: total,
-      remaining: total - uniqueOwned,
+      uniqueOwned: ownedSet.size,
+      totalCopies: owned.length,
+      total,
+      pct: total ? (ownedSet.size / total) * 100 : 0,
       valueUsd,
-      mythics, rares, uncommons, commons,
-      mythicsTotal, raresTotal, uncommonsTotal, commonsTotal,
-      packsOpened: packs.length,
-      foilCount,
+      byColor,
+      byRarity,
     };
-  }, [main, owned, packs, foilOwned]);
+  }, [main, owned]);
 
-  // Binder Map: per-page completion
-  const pageCompletion = useMemo(() => {
-    if (!main.length) return [] as Array<{ page: number; owned: number; total: number }>;
-    const sorted = sortByCollector(main);
-    const { slotsPerPage } = binder;
+  const topValued = useMemo(() => {
     const ownedSet = new Set(owned);
-    const pages: Array<{ page: number; owned: number; total: number }> = [];
-    for (let p = 0; p * slotsPerPage < sorted.length; p++) {
-      const slice = sorted.slice(p * slotsPerPage, p * slotsPerPage + slotsPerPage);
-      const got = slice.filter((c) => ownedSet.has(c.collector_number)).length;
-      pages.push({ page: p + 1, owned: got, total: slice.length });
+    const byCn = new Map(main.map((c) => [c.collector_number, c] as const));
+    const out: CardT[] = [];
+    for (const cn of ownedSet) {
+      const c = byCn.get(cn);
+      if (c) out.push(c);
     }
-    return pages;
-  }, [main, owned, binder]);
+    out.sort((a, b) => (b.price_usd ?? 0) - (a.price_usd ?? 0));
+    return out.slice(0, 5);
+  }, [main, owned]);
 
-  const sessionAdded = useMemo(() => {
-    const since = Date.now() - 30 * 60_000;
-    return timeline.filter(
-      (e) => new Date(e.date).getTime() > since && e.type !== 'remove',
-    ).length;
-  }, [timeline]);
+  const recent = useMemo(() => {
+    const seen = new Set<string>();
+    const out: CardT[] = [];
+    const byCn = new Map(main.map((c) => [c.collector_number, c] as const));
+    for (let i = timeline.length - 1; i >= 0 && out.length < 4; i--) {
+      const e = timeline[i];
+      if (e.type === 'remove' || seen.has(e.cn)) continue;
+      seen.add(e.cn);
+      const c = byCn.get(e.cn);
+      if (c) out.push(c);
+    }
+    return out;
+  }, [timeline, main]);
 
-  const handlePackOpen = () => {
-    onOpenPack();
-    setOpenPackLocal(false);
-  };
+  const activity = useMemo(() => {
+    const byCn = new Map(main.map((c) => [c.collector_number, c] as const));
+    const out = [];
+    for (let i = timeline.length - 1; i >= 0 && out.length < 3; i--) {
+      const e = timeline[i];
+      out.push({ event: e, card: byCn.get(e.cn) });
+    }
+    return out;
+  }, [timeline, main]);
+
+  const valueSeries = useMemo(() => {
+    if (!timeline.length) return [] as number[];
+    const sorted = [...timeline].sort((a, b) => (a.date < b.date ? -1 : 1));
+    const byCn = new Map(main.map((c) => [c.collector_number, c] as const));
+    let v = 0;
+    return sorted.map((e) => {
+      const price = byCn.get(e.cn)?.price_usd ?? 0;
+      v += e.type === 'remove' ? -price : price;
+      return Math.max(0, v);
+    });
+  }, [timeline, main]);
+
+  const weekDelta = useMemo(() => {
+    if (valueSeries.length < 2) return null;
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const sorted = [...timeline].sort((a, b) => (a.date < b.date ? -1 : 1));
+    let priorIdx = -1;
+    for (let i = 0; i < sorted.length; i++) {
+      if (Date.parse(sorted[i].date) >= cutoff) {
+        priorIdx = i - 1;
+        break;
+      }
+    }
+    if (priorIdx < 0) priorIdx = 0;
+    const prior = valueSeries[priorIdx] ?? valueSeries[0];
+    const now = valueSeries[valueSeries.length - 1];
+    if (!prior || prior === now) return null;
+    const pct = ((now - prior) / prior) * 100;
+    return { pct, up: pct >= 0 };
+  }, [timeline, valueSeries]);
+
+  const fmt =
+    currency === 'MYR'
+      ? (usd: number) => `RM ${(usd * rate).toFixed(2)}`
+      : (usd: number) => `$${usd.toFixed(2)}`;
+
+  const highestCard = topValued[0];
+
+  if (isLoading && !main.length) {
+    return (
+      <div className="app-content has-fab-top">
+        <div
+          className="text-center py-12 text-display"
+          style={{ color: 'var(--ink-muted)', fontSize: 11, letterSpacing: '0.3em' }}
+        >
+          Loading set data…
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {/* Quick actions */}
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn btn-primary" onClick={onOpenSearch}>
-          <Search className="h-4 w-4" /> Search
+    <div className={`app-content has-fab-top ${expanded ? 'scroll' : ''}`}>
+      {/* HERO — Completion % dominant tile (editorial, gold-accented) */}
+      <div
+        className="glass-raised glow-gold"
+        style={{ padding: '18px 16px 14px', position: 'relative', overflow: 'hidden' }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span className="mo-section-label">FIN Completion</span>
+          <span
+            className="text-display"
+            style={{
+              fontSize: 9,
+              letterSpacing: '0.3em',
+              color: 'var(--accent-gold)',
+              padding: '3px 8px',
+              border: '1px solid var(--border-hair)',
+              borderRadius: 3,
+            }}
+          >
+            Final Fantasy · FIN
+          </span>
+        </div>
+        <div className="flex items-end justify-between gap-3">
+          <div className="mo-numeric-hero">
+            <CountUp to={stats.pct} format={(v) => `${v.toFixed(0)}%`} />
+          </div>
+          <div className="text-right pb-2">
+            <div
+              className="text-numeric"
+              style={{ color: 'var(--ink-primary)', fontSize: 15 }}
+            >
+              <CountUp to={stats.uniqueOwned} />
+              <span style={{ color: 'var(--ink-subtle)' }}> / {stats.total}</span>
+            </div>
+            <div
+              className="text-display mt-0.5"
+              style={{
+                fontSize: 8,
+                letterSpacing: '0.3em',
+                color: 'var(--ink-muted)',
+              }}
+            >
+              Unique Cards
+            </div>
+          </div>
+        </div>
+        <div className="app-progress mt-3 mb-3">
+          <div className="app-progress-fill" style={{ width: `${stats.pct}%` }} />
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {COLORS.map((col) => {
+            const { o, t } = stats.byColor[col];
+            const pct = t ? Math.round((o / t) * 100) : 0;
+            return (
+              <div key={col} className="app-pipstat">
+                <ManaPip color={col.toLowerCase() as 'w' | 'u' | 'b' | 'r' | 'g'} label={col} />
+                <span>{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="ornate-hr" />
+
+      {/* STAT GRID — asymmetric 2x2 smaller tiles */}
+      <div className="grid grid-cols-2 gap-2">
+        <QuickTile
+          icon={<Box size={16} />}
+          label="Unique"
+          value={<CountUp to={stats.uniqueOwned} />}
+          sub={`of ${stats.total}`}
+        />
+        <QuickTile
+          icon={<Copy size={16} />}
+          label="Copies"
+          value={<CountUp to={stats.totalCopies} />}
+          sub="owned"
+        />
+        <QuickTile
+          icon={<Package size={16} />}
+          label="Packs"
+          value={<CountUp to={packs.length} />}
+          sub="opened"
+        />
+        <QuickTile
+          icon={<Crown size={16} />}
+          label="Apex"
+          value={highestCard ? fmt(highestCard.price_usd ?? 0) : '—'}
+          sub={highestCard ? truncate(highestCard.name, 14) : 'none yet'}
+          onClick={highestCard ? () => onPickCard(highestCard) : undefined}
+        />
+      </div>
+
+      {/* PORTFOLIO VALUE STRIP */}
+      <div
+        className="glass-raised"
+        style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <div>
+          <div className="mo-section-label">Portfolio · {currency}</div>
+          <div className="mo-numeric-lg mt-1" style={{ color: 'var(--accent-gold-bright)' }}>
+            <CountUp to={stats.valueUsd} format={fmt} />
+          </div>
+        </div>
+        {weekDelta && (
+          <span
+            className="text-display flex items-center gap-1"
+            style={{
+              fontSize: 10,
+              letterSpacing: '0.2em',
+              color: weekDelta.up ? 'var(--success)' : 'var(--danger)',
+            }}
+          >
+            {weekDelta.up ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+            {weekDelta.up ? '+' : ''}
+            {weekDelta.pct.toFixed(1)}%
+            <span style={{ color: 'var(--ink-subtle)', marginLeft: 4 }}>7D</span>
+          </span>
+        )}
+      </div>
+
+      {/* CTA */}
+      <div className="flex gap-2">
+        <button type="button" className="app-btn flex-1" onClick={() => onJumpTo('binder')}>
+          <Layers size={16} /> Binder
         </button>
-        <button type="button" className="btn btn-secondary" onClick={handlePackOpen}>
-          <Package className="h-4 w-4" /> Open Pack
-        </button>
-        <button type="button" className="btn btn-secondary" onClick={() => setOpenScan((v) => !v)}>
-          <Scan className="h-4 w-4" /> Scan
+        {showCollector && (
+          <button type="button" className="app-btn flex-1" onClick={() => onJumpTo('collector')}>
+            <Gem size={16} /> Collector
+          </button>
+        )}
+        <button type="button" className="app-btn primary flex-1" onClick={() => onJumpTo('scan')}>
+          <ScanLine size={16} /> Scan
         </button>
       </div>
 
-      {openScan && <Scanner />}
+      {/* TOGGLE */}
+      <button
+        type="button"
+        className="app-loadmore"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        {expanded ? (
+          <>
+            <ChevronUp size={16} /> Hide Details
+          </>
+        ) : (
+          <>
+            <ChevronDown size={16} /> Show Details
+          </>
+        )}
+      </button>
 
-      {isLoading && !main.length ? (
-        <div className="py-12 text-center text-[var(--text-muted)]">Loading set data…</div>
-      ) : (
+      {expanded && (
         <>
-          {/* Main stat card: completion donut + rarity ratios */}
-          <div className="dash-card">
-            <div className="flex items-center gap-4">
-              <div
-                className="donut-ring"
-                style={{ ['--pct' as string]: stats.completion.toFixed(1), ['--fill' as string]: 'var(--gold)' } as React.CSSProperties}
+          <div className="ornate-hr" />
+
+          <div className="glass-raised" style={{ padding: '14px 14px 10px' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="mo-section-label">Value Trend</span>
+              <span
+                className="text-display"
+                style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--ink-muted)' }}
               >
-                <div className="donut-ring-label">{stats.completion.toFixed(0)}%</div>
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-num text-2xl font-bold">
-                  <span className="text-[var(--accent)]">{stats.uniqueOwned}</span>
-                  <span className="text-[var(--text-muted)]"> / {stats.setSize}</span>
-                </div>
-                <div className="text-[0.72rem] text-[var(--text-muted)] font-ui mt-0.5">
-                  {stats.remaining} cards remaining
-                </div>
-                <div className="rarity-ratio-row mt-2">
-                  <span className="rarity-ratio mythic">
-                    <span className="label">M</span>
-                    <span className="count">
-                      {stats.mythics}/{stats.mythicsTotal}
-                    </span>
-                  </span>
-                  <span className="rarity-ratio rare">
-                    <span className="label">R</span>
-                    <span className="count">
-                      {stats.rares}/{stats.raresTotal}
-                    </span>
-                  </span>
-                  <span className="rarity-ratio uncommon">
-                    <span className="label">U</span>
-                    <span className="count">
-                      {stats.uncommons}/{stats.uncommonsTotal}
-                    </span>
-                  </span>
-                  <span className="rarity-ratio common">
-                    <span className="label">C</span>
-                    <span className="count">
-                      {stats.commons}/{stats.commonsTotal}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick stat tiles */}
-          <div className="grid grid-cols-3 gap-3">
-            <DashCard title="Foils" value={String(stats.foilCount)} accent="gold" icon="✦" />
-            <DashCard title="Packs" value={String(stats.packsOpened)} accent="accent" />
-            <DashCard
-              title="Value"
-              value={currency === 'MYR' ? `RM ${(stats.valueUsd * rate).toFixed(0)}` : `$${stats.valueUsd.toFixed(0)}`}
-              accent="green"
-            />
-          </div>
-
-          {/* This session */}
-          <div className="dash-card session-panel">
-            <div className="session-top">
-              <span className="session-title">This Session</span>
-              <span className="session-count">{sessionAdded} cards added</span>
-            </div>
-            <p className="session-msg">
-              {sessionAdded
-                ? 'Keep going — your binder is filling up.'
-                : 'Open a pack or search for cards to get started'}
-            </p>
-            <button
-              type="button"
-              className="btn btn-primary session-cta"
-              onClick={onOpenSearch}
-            >
-              Add Cards
-            </button>
-          </div>
-
-          {/* Binder map */}
-          <div className="dash-card">
-            <div className="flex items-baseline justify-between mb-1">
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                Binder Map
-              </span>
-              <span className="text-[0.7rem] font-num text-[var(--text-muted)]">
-                {pageCompletion.filter((p) => p.owned === p.total).length} / {pageCompletion.length}{' '}
-                pages complete
+                {currency}
               </span>
             </div>
-            <div className="binder-map">
-              {pageCompletion.map((p) => {
-                const cls = p.owned === 0 ? '' : p.owned === p.total ? 'complete' : 'partial';
+            <SparklineReveal>
+              <Sparkline values={valueSeries} />
+            </SparklineReveal>
+          </div>
+
+          <div className="glass-raised" style={{ padding: '14px' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="mo-section-label">Rarity Breakdown</span>
+              <Gem size={16} style={{ color: 'var(--accent-gold)', opacity: 0.7 }} />
+            </div>
+            <div className="flex flex-col gap-2">
+              {RARITIES.map((r) => {
+                const { o, t } = stats.byRarity[r];
+                const pct = t ? (o / t) * 100 : 0;
                 return (
-                  <button
-                    type="button"
-                    key={p.page}
-                    className={`binder-map-cell ${cls}`}
-                    title={`Page ${p.page} · ${p.owned}/${p.total}`}
-                    onClick={() => onJumpTo('binder')}
-                  >
-                    {p.page}
-                  </button>
+                  <div key={r} className="flex items-center gap-2">
+                    <span
+                      className="text-display"
+                      style={{
+                        fontSize: 9,
+                        letterSpacing: '0.25em',
+                        color: RARITY_COLOR[r],
+                        width: 68,
+                      }}
+                    >
+                      {RARITY_LABEL[r]}
+                    </span>
+                    <div className="app-progress flex-1" style={{ height: 5 }}>
+                      <div
+                        className="app-progress-fill"
+                        style={{
+                          width: `${pct}%`,
+                          background: RARITY_COLOR[r],
+                          opacity: 0.85,
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="text-numeric"
+                      style={{
+                        color: 'var(--ink-secondary)',
+                        fontSize: 11,
+                        width: 58,
+                        textAlign: 'right',
+                      }}
+                    >
+                      {o}
+                      <span style={{ color: 'var(--ink-subtle)' }}> / {t}</span>
+                    </span>
+                  </div>
                 );
               })}
             </div>
-            <div className="binder-map-legend">
-              <span className="binder-map-legend-sw complete">Complete</span>
-              <span className="binder-map-legend-sw partial">Partial</span>
-              <span className="binder-map-legend-sw">Empty</span>
+          </div>
+
+          {topValued.length > 0 && (
+            <div className="glass-raised" style={{ padding: '14px' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="mo-section-label">Top Valued</span>
+                <span
+                  className="text-display"
+                  style={{ fontSize: 9, letterSpacing: '0.25em', color: 'var(--ink-muted)' }}
+                >
+                  Top 5
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                {topValued.map((c, i) => (
+                  <button
+                    key={c.collector_number}
+                    type="button"
+                    onClick={() => onPickCard(c)}
+                    className="flex items-center gap-2.5 text-left py-1 px-1 rounded-sm transition-colors hover:bg-white/[0.04]"
+                  >
+                    <span
+                      className="text-display"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--accent-gold)',
+                        opacity: 0.7,
+                        width: 16,
+                        textAlign: 'center',
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div style={{ width: 30, flexShrink: 0 }}>
+                      <CardThumb card={c} onClick={() => onPickCard(c)} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div
+                        style={{
+                          color: 'var(--ink-primary)',
+                          fontSize: 12,
+                          fontFamily: 'var(--font-body)',
+                        }}
+                        className="truncate"
+                      >
+                        {c.name}
+                      </div>
+                      <div
+                        className="text-display"
+                        style={{
+                          fontSize: 9,
+                          letterSpacing: '0.2em',
+                          color: 'var(--ink-muted)',
+                        }}
+                      >
+                        #{c.collector_number} · {c.rarity}
+                      </div>
+                    </div>
+                    <span
+                      className="text-numeric"
+                      style={{ color: 'var(--accent-gold-bright)', fontSize: 12 }}
+                    >
+                      {fmt(c.price_usd ?? 0)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="glass-raised" style={{ padding: '14px' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="mo-section-label">Recently Added</span>
+              <button
+                type="button"
+                className="text-display"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: '0.25em',
+                  color: 'var(--accent-gold)',
+                }}
+                onClick={() => onJumpTo('binder')}
+              >
+                see all ›
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {Array.from({ length: 4 }).map((_, i) => {
+                const c = recent[i];
+                return c ? (
+                  <CardThumb key={c.collector_number} card={c} onClick={() => onPickCard(c)} />
+                ) : (
+                  <CardThumb key={`empty-${i}`} empty />
+                );
+              })}
             </div>
           </div>
+
+          {activity.length > 0 && (
+            <div className="glass-raised" style={{ padding: '14px' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="mo-section-label">Activity Pulse</span>
+                <button
+                  type="button"
+                  className="text-display"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: '0.25em',
+                    color: 'var(--accent-gold)',
+                  }}
+                  onClick={() => onJumpTo('timeline')}
+                >
+                  timeline ›
+                </button>
+              </div>
+              <div className="flex flex-col gap-1">
+                {activity.map(({ event, card }, i) => (
+                  <button
+                    key={`${event.date}-${i}`}
+                    type="button"
+                    disabled={!card}
+                    onClick={() => card && onPickCard(card)}
+                    className="flex items-center gap-2.5 text-left py-1.5 px-1 rounded-sm transition-colors hover:bg-white/[0.04] disabled:cursor-default disabled:hover:bg-transparent"
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 20,
+                        height: 20,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color:
+                          event.type === 'remove'
+                            ? 'var(--danger)'
+                            : event.type === 'pack'
+                              ? 'var(--accent-crystal)'
+                              : 'var(--success)',
+                      }}
+                    >
+                      {event.type === 'add' && <Plus size={16} />}
+                      {event.type === 'remove' && <Minus size={16} />}
+                      {event.type === 'pack' && <Sparkles size={16} />}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div
+                        style={{
+                          color: 'var(--ink-primary)',
+                          fontSize: 12,
+                          fontFamily: 'var(--font-body)',
+                        }}
+                        className="truncate"
+                      >
+                        {card ? card.name : `#${event.cn}`}
+                      </div>
+                      <div
+                        className="text-display"
+                        style={{
+                          fontSize: 9,
+                          letterSpacing: '0.2em',
+                          color: 'var(--ink-muted)',
+                        }}
+                      >
+                        {event.type === 'pack'
+                          ? 'Pulled from pack'
+                          : event.type === 'add'
+                            ? 'Added to collection'
+                            : 'Removed'}
+                      </div>
+                    </div>
+                    <span
+                      className="text-display"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        color: 'var(--ink-muted)',
+                      }}
+                    >
+                      {relativeTime(event.date)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <GoldDivider />
         </>
       )}
-
-      <PackModal open={openPackLocal} onClose={() => setOpenPackLocal(false)} />
-      <CardModal card={activeCard} onClose={() => setActiveCard(null)} onSwitchCard={setActiveCard} />
     </div>
   );
 }
 
-interface DashCardProps {
-  title: string;
-  value: string;
-  accent?: 'accent' | 'gold' | 'green';
-  icon?: string;
+interface QuickTileProps {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  sub: string;
+  onClick?: () => void;
 }
 
-function DashCard({ title, value, accent = 'accent', icon }: DashCardProps) {
-  const color =
-    accent === 'gold' ? 'var(--gold)' : accent === 'green' ? 'var(--owned-border)' : 'var(--accent)';
+function QuickTile({ icon, label, value, sub, onClick }: QuickTileProps) {
+  const inner = (
+    <>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span style={{ color: 'var(--accent-gold)', opacity: 0.85 }}>{icon}</span>
+        <span className="mo-section-label" style={{ fontSize: 9, letterSpacing: '0.25em' }}>
+          {label}
+        </span>
+      </div>
+      <div className="mo-numeric-md">{value}</div>
+      <div
+        className="text-display mt-0.5 truncate"
+        style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--ink-muted)' }}
+      >
+        {sub}
+      </div>
+    </>
+  );
+  const baseStyle: React.CSSProperties = {
+    padding: 12,
+  };
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="glass text-left transition-colors"
+        style={baseStyle}
+      >
+        {inner}
+      </button>
+    );
+  }
   return (
-    <div className="dash-card">
-      <div className="text-[0.6rem] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-        {icon && <span style={{ color, marginRight: 4 }}>{icon}</span>}
-        {title}
-      </div>
-      <div className="dash-big-num" style={{ color }}>
-        {value}
-      </div>
+    <div className="glass" style={baseStyle}>
+      {inner}
     </div>
+  );
+}
+
+function truncate(s: string, n: number): string {
+  return s.length > n ? `${s.slice(0, n)}…` : s;
+}
+
+interface CountUpProps {
+  to: number;
+  duration?: number;
+  format?: (v: number) => string;
+}
+
+const easeOut = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+function CountUp({ to, duration = 700, format }: CountUpProps) {
+  const reduce = useReducedMotion();
+  const [value, setValue] = useState<number>(reduce ? to : 0);
+  const startRef = useRef<number | null>(null);
+  const fromRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (reduce) {
+      setValue(to);
+      return;
+    }
+    fromRef.current = 0;
+    startRef.current = null;
+    let raf = 0;
+    const step = (ts: number): void => {
+      if (startRef.current === null) startRef.current = ts;
+      const elapsed = ts - startRef.current;
+      const t = Math.min(1, elapsed / duration);
+      const eased = easeOut(t);
+      setValue(fromRef.current + (to - fromRef.current) * eased);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, duration, reduce]);
+
+  const display = format ? format(value) : Math.round(value).toString();
+  return <>{display}</>;
+}
+
+interface SparklineRevealProps {
+  children: ReactNode;
+}
+
+function SparklineReveal({ children }: SparklineRevealProps) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduce ? { opacity: 1 } : { opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
+      animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
+      transition={{ duration: reduce ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }

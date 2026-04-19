@@ -2,7 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './App';
+import { initSurgeFoilPattern } from './lib/surgeFoil';
 import './styles/globals.css';
+import './styles/skin.css';
+
+initSurgeFoilPattern();
 
 const queryClient = new QueryClient({
   defaultOptions: {

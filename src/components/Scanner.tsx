@@ -7,11 +7,15 @@ import {
   tesseractRecognize,
 } from '@/lib/ocr';
 import { toast } from '@/store/toast';
+import { useAllCards } from '@/hooks/useCards';
+import { useCelebrate } from '@/hooks/useCelebrate';
 
 export function Scanner() {
   const engine = useConfigStore((s) => s.ocrEngine);
   const apiKey = useConfigStore((s) => s.ocrSpaceKey);
   const addCard = useCollectionStore((s) => s.addCard);
+  const all = useAllCards();
+  const { celebrateAdd } = useCelebrate();
   const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<string[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -115,7 +119,11 @@ export function Scanner() {
                 className="search-chip search-chip-scan"
                 onClick={() => {
                   addCard(cn, 'scan');
-                  toast({ title: `Added #${cn}`, variant: 'success' });
+                  const card =
+                    all.main.find((c) => c.collector_number === cn) ??
+                    all.variants.find((c) => c.collector_number === cn);
+                  if (card) celebrateAdd(card);
+                  else toast({ title: `Added #${cn}`, variant: 'success' });
                 }}
               >
                 + #{cn}

@@ -51,7 +51,8 @@ export function scryfallPng(url: string): string {
     .replace('/normal/', '/png/')
     .replace('/large/', '/png/')
     .replace('/small/', '/png/')
-    .replace(/\.jpg$/, '.png');
+    .replace(/\.jpg(\?|$)/, '.png$1');
 }
 
-export const MTG_CARD_BACK = '/card-back.svg';
+export const MTG_CARD_BACK =
+  'https://backs.scryfall.io/large/0/a/0aeebaf5-8c7d-4636-9e82-8c27447861f7.jpg';
