@@ -251,7 +251,7 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
   return (
     <>
       <Dialog open={!!card && !inspectOpen} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent className="!max-w-[640px] !p-0 !border-0 !bg-transparent !shadow-none">
+        <DialogContent className="cardmodal-shell !max-w-[min(1040px,calc(100vw-48px))] !p-0 !border-0 !bg-transparent !shadow-none">
           <motion.div
             className={cn(
               'glass-raised modal-card !relative !max-h-[90dvh] !overflow-y-auto !p-6 rounded-[22px]',
@@ -274,8 +274,8 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
               #{card.collector_number} · {card.rarity}
             </DialogDescription>
 
-            {/* Header: card image + info, row on desktop, stacked on mobile */}
-            <motion.div className="modal-header-row" variants={sectionVariants}>
+            {/* Header: card image + info. Stacked on mobile, side-by-side ≥1024 via .cardmodal-body. */}
+            <motion.div className="cardmodal-body modal-header-row" variants={sectionVariants}>
               <div className="modal-card-col">
                 <div
                   className="card-visualizer"
@@ -359,14 +359,15 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
                   </button>
                 </div>
               </div>
-              <div className="modal-info-col">
+              <div className="modal-info-col" style={{ minWidth: 0 }}>
                 <h3
-                  className="modal-name text-display"
+                  className="modal-name text-display text-clamp-2"
                   style={{
                     fontFamily: 'var(--font-display, Cinzel, serif)',
                     color: 'var(--ink-primary, #F3F1E8)',
                     letterSpacing: '0.03em',
                     lineHeight: 1.15,
+                    fontSize: 'var(--fs-hero-lg, clamp(1.25rem, 3.5vw, 1.75rem))',
                   }}
                 >
                   <span
@@ -424,7 +425,7 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
                     isFoilOwned ? (
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary tap-44"
                         onClick={handleRemoveFoil}
                       >
                         − Remove {variantShort}{inherentlyFoil ? '' : ' Foil'}
@@ -432,7 +433,7 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
                     ) : (
                       <button
                         type="button"
-                        className="btn btn-foil"
+                        className="btn btn-foil tap-44"
                         onClick={handleAddFoil}
                       >
                         {foilAddLabel}
@@ -441,7 +442,7 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
                   ) : (
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="btn btn-primary tap-44"
                       onClick={
                         isOwnedRegular
                           ? () => {
@@ -456,12 +457,13 @@ export function CardModal({ card, onClose, onSwitchCard }: CardModalProps) {
                   )}
                 </div>
                 {family.length > 0 && (
-                  <div className="modal-foil-info">
+                  <div className="modal-foil-info" style={{ minWidth: 0 }}>
                     <div
-                      className="mb-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em]"
+                      className="mb-1 font-semibold uppercase tracking-[0.22em]"
                       style={{
                         color: 'var(--accent-gold, #E8C77A)',
                         fontFamily: 'var(--font-display, Cinzel, serif)',
+                        fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
                       }}
                     >
                       Variants

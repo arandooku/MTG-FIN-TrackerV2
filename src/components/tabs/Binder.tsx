@@ -119,21 +119,23 @@ export function Binder({ onPickCard }: BinderProps) {
             opacity="0.5"
           />
         </svg>
-        <div className="flex items-baseline justify-between pr-8">
-          <div>
+        <div className="flex items-baseline justify-between gap-3 pr-8 min-w-0">
+          <div className="min-w-0 flex-1">
             <div
-              className="text-display"
+              className="text-display text-truncate"
               style={{
-                fontSize: 16,
+                fontSize: 'var(--fs-hero-lg, clamp(1.25rem, 3.5vw, 1.75rem))',
                 letterSpacing: '0.2em',
                 color: 'var(--accent-gold-bright)',
+                minWidth: 0,
               }}
             >
               {binderName}
             </div>
             <div
+              className="text-truncate"
               style={{
-                fontSize: 11,
+                fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
                 color: 'var(--ink-muted)',
                 fontFamily: 'var(--font-body)',
                 letterSpacing: '0.05em',
@@ -148,8 +150,12 @@ export function Binder({ onPickCard }: BinderProps) {
             initial={reduce ? false : { scale: 1 }}
             animate={reduce ? undefined : { scale: [1, 1.3, 1] }}
             transition={{ type: 'spring', stiffness: 520, damping: 14 }}
-            className="text-numeric"
-            style={{ color: 'var(--accent-gold)', fontSize: 14 }}
+            className="text-numeric text-truncate"
+            style={{
+              color: 'var(--accent-gold)',
+              fontSize: 'var(--fs-hero-lg, clamp(1.25rem, 3.5vw, 1.75rem))',
+              flexShrink: 0,
+            }}
           >
             {ownedTotal}
             <span style={{ color: 'var(--ink-subtle)' }}> / {main.length}</span>
@@ -157,38 +163,40 @@ export function Binder({ onPickCard }: BinderProps) {
         </div>
       </div>
 
-      {/* SEARCH + filter pills as glass */}
-      <div className="app-search">
-        <Search size={16} style={{ color: 'var(--accent-gold)' }} />
-        <input
-          placeholder="Search cards…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
+      {/* SEARCH + filter pills — inline at ≥768 */}
+      <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 min-w-0">
+        <div className="app-search flex-1 min-w-0">
+          <Search size={16} style={{ color: 'var(--accent-gold)' }} />
+          <input
+            placeholder="Search cards…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
 
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-        <button
-          type="button"
-          className={`app-chip ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          FIN
-        </button>
-        <button
-          type="button"
-          className={`app-chip ${filter === 'owned' ? 'active' : ''}`}
-          onClick={() => setFilter('owned')}
-        >
-          Owned
-        </button>
-        <button
-          type="button"
-          className={`app-chip ${filter === 'missing' ? 'active' : ''}`}
-          onClick={() => setFilter('missing')}
-        >
-          Missing
-        </button>
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+          <button
+            type="button"
+            className={`app-chip ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            FIN
+          </button>
+          <button
+            type="button"
+            className={`app-chip ${filter === 'owned' ? 'active' : ''}`}
+            onClick={() => setFilter('owned')}
+          >
+            Owned
+          </button>
+          <button
+            type="button"
+            className={`app-chip ${filter === 'missing' ? 'active' : ''}`}
+            onClick={() => setFilter('missing')}
+          >
+            Missing
+          </button>
+        </div>
       </div>
 
       {/* GRID — 3x3 within OrnatePanel (slots owned by other agent) */}
@@ -197,6 +205,8 @@ export function Binder({ onPickCard }: BinderProps) {
         style={{
           flex: 1,
           minHeight: 0,
+          width: '100%',
+          maxWidth: 'none',
           display: 'flex',
           flexDirection: 'column',
           overflowY: 'auto',
@@ -255,22 +265,24 @@ export function Binder({ onPickCard }: BinderProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 8,
+          minWidth: 0,
         }}
       >
         <button
           type="button"
           className="app-btn ghost !py-1.5 !px-3"
-          style={{ fontSize: 11 }}
+          style={{ fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))', minHeight: 44, flexShrink: 0 }}
           disabled={current <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
           <ChevronLeft size={16} /> Prev
         </button>
-        <div className="text-center">
+        <div className="text-center min-w-0 flex-1 overflow-hidden">
           <div
-            className="text-display"
+            className="text-display text-truncate"
             style={{
-              fontSize: 12,
+              fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
               letterSpacing: '0.25em',
               color: 'var(--accent-gold-bright)',
             }}
@@ -282,7 +294,7 @@ export function Binder({ onPickCard }: BinderProps) {
         <button
           type="button"
           className="app-btn ghost !py-1.5 !px-3"
-          style={{ fontSize: 11 }}
+          style={{ fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))', minHeight: 44, flexShrink: 0 }}
           disabled={current >= totalPages}
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
         >

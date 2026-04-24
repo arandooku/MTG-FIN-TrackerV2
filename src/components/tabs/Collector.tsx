@@ -161,17 +161,17 @@ export function Collector({ onPickCard }: CollectorProps) {
       {/* HERO — completion ring with gold accent */}
       <div
         className="glass-raised glow-gold"
-        style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', gap: 14 }}
+        style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}
       >
         <div aria-hidden style={{ flexShrink: 0 }}>
           <Ring owned={ownedCount} total={variants.length} />
         </div>
         <div className="flex-1 min-w-0">
           <div
-            className="text-display"
+            className="text-display text-truncate"
             style={{
-              fontSize: 13,
-              letterSpacing: '0.25em',
+              fontSize: 'var(--fs-hero-lg, clamp(1.25rem, 3.5vw, 1.75rem))',
+              letterSpacing: '0.2em',
               color: 'var(--accent-gold-bright)',
             }}
           >
@@ -182,9 +182,9 @@ export function Collector({ onPickCard }: CollectorProps) {
             initial={reduce ? false : { scale: 1 }}
             animate={reduce ? undefined : { scale: [1, 1.3, 1] }}
             transition={{ type: 'spring', stiffness: 520, damping: 14 }}
-            className="text-display mt-1"
+            className="text-display text-truncate mt-1"
             style={{
-              fontSize: 10,
+              fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
               letterSpacing: '0.25em',
               color: 'var(--ink-muted)',
             }}
@@ -194,41 +194,43 @@ export function Collector({ onPickCard }: CollectorProps) {
         </div>
       </div>
 
-      <div className="app-search">
-        <Search size={16} style={{ color: 'var(--accent-gold)' }} />
-        <input
-          placeholder="Search variants…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+      {/* SEARCH + filter pills — inline at ≥768 */}
+      <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2 min-w-0">
+        <div className="app-search flex-1 min-w-0">
+          <Search size={16} style={{ color: 'var(--accent-gold)' }} />
+          <input
+            placeholder="Search variants…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+          <button
+            type="button"
+            className={`app-chip ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            className={`app-chip ${filter === 'owned' ? 'active' : ''}`}
+            onClick={() => setFilter('owned')}
+          >
+            Owned
+          </button>
+          <button
+            type="button"
+            className={`app-chip ${filter === 'missing' ? 'active' : ''}`}
+            onClick={() => setFilter('missing')}
+          >
+            Missing
+          </button>
+        </div>
       </div>
 
-      {/* GLASS PILLS — filter chips */}
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-        <button
-          type="button"
-          className={`app-chip ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          All
-        </button>
-        <button
-          type="button"
-          className={`app-chip ${filter === 'owned' ? 'active' : ''}`}
-          onClick={() => setFilter('owned')}
-        >
-          Owned
-        </button>
-        <button
-          type="button"
-          className={`app-chip ${filter === 'missing' ? 'active' : ''}`}
-          onClick={() => setFilter('missing')}
-        >
-          Missing
-        </button>
-      </div>
-
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div style={{ flex: 1, minHeight: 0, width: '100%', overflowY: 'auto' }}>
         {orderedGroups.map(([key, cards]) => {
           const visible = cards.filter(filterCard);
           if (!visible.length) return null;
@@ -256,10 +258,10 @@ export function Collector({ onPickCard }: CollectorProps) {
                   }}
                 />
                 <span
-                  className="text-display flex-1"
+                  className="text-display flex-1 text-truncate min-w-0"
                   style={{
-                    fontSize: 11,
-                    letterSpacing: '0.3em',
+                    fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                    letterSpacing: '0.22em',
                     color: 'var(--ink-primary)',
                   }}
                 >

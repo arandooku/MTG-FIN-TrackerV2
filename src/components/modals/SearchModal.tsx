@@ -82,7 +82,7 @@ export function SearchModal({ open, onClose, onPick, onOpenPack }: SearchModalPr
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         className={cn(
-          '!max-w-2xl !p-0 !border-0 !bg-transparent !shadow-none',
+          'searchmodal-sheet !max-w-[720px] !p-0 !border-0 !bg-transparent !shadow-none',
         )}
       >
         <motion.div
@@ -122,12 +122,14 @@ export function SearchModal({ open, onClose, onPick, onOpenPack }: SearchModalPr
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className={cn(
-                'flex-1 bg-transparent text-lg focus:outline-none',
+                'flex-1 bg-transparent focus:outline-none py-1',
                 'placeholder:uppercase placeholder:tracking-[0.22em] placeholder:text-sm',
               )}
               style={{
                 fontFamily: 'var(--font-body, Inter, sans-serif)',
                 color: 'var(--ink-primary, #F3F1E8)',
+                fontSize: 'var(--fs-body-lg, clamp(0.95rem, 1.6vw, 1.05rem))',
+                minHeight: 44,
               }}
               onFocus={(e) => {
                 e.currentTarget.style.boxShadow =
@@ -176,7 +178,7 @@ export function SearchModal({ open, onClose, onPick, onOpenPack }: SearchModalPr
             </FilterChip>
           </motion.div>
 
-          <div className="grid max-h-[55vh] grid-cols-3 gap-2 overflow-y-auto p-3 sm:grid-cols-4 md:grid-cols-5">
+          <div className="searchmodal-results">
             <AnimatePresence mode="popLayout">
               {matches.map((c, i) => {
                 const variant = classifyFoil(c);

@@ -60,6 +60,27 @@
   --font-display: "Cinzel", "Trajan Pro", Georgia, serif;
   --font-body: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* ---------- RESPONSIVE FOUNDATION (UI refinement pass) ----------
+     Fluid type scale via clamp() so hero/numeric text never overflows
+     on a 320w mobile tile yet still scales up on a 1440w desktop. */
+  --fs-hero-xxl: clamp(2.25rem, 6.5vw, 4rem);   /* 36 → 64 */
+  --fs-hero-xl:  clamp(1.75rem, 5vw, 2.75rem);  /* 28 → 44 */
+  --fs-hero-lg:  clamp(1.25rem, 3.5vw, 1.75rem);/* 20 → 28 */
+  --fs-body-lg:  clamp(0.95rem, 1.6vw, 1.05rem);
+  --fs-body:     clamp(0.85rem, 1.2vw, 0.95rem);
+  --fs-label:    clamp(0.625rem, 0.9vw, 0.75rem);
+
+  /* Spacing rhythm */
+  --gap-1: 6px;
+  --gap-2: 10px;
+  --gap-3: 16px;
+  --gap-4: 24px;
+  --gap-5: 36px;
+
+  /* Layout */
+  --content-max: 1200px;
+  --nav-clearance: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
 @theme {
@@ -264,6 +285,58 @@ h3 {
   border: 1px solid var(--border-soft);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-2);
+}
+
+/* ---------- Responsive layout primitives ----------
+   Used by tab views to switch between single-column on mobile and
+   editorial 2-col splits on tablet/desktop. min-width: 0 on grid
+   items prevents flex/grid children from refusing to shrink, which
+   is the root cause of long-text overflow inside flex parents. */
+.stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-3);
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .stack.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stack.hero-right {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
+@media (min-width: 1024px) {
+  .stack.desktop-wide {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: var(--gap-4);
+  }
+  .stack.cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+.min-w-0 {
+  min-width: 0;
+}
+/* Hide at very narrow viewports where ornamental labels/chips would crowd the layout. */
+@media (max-width: 400px) {
+  .hide-narrow {
+    display: none !important;
+  }
 }
 
 .text-display {
@@ -2446,36 +2519,40 @@ h3 {
     0 0 18px rgba(212, 168, 74, 0.3);
 }
 
-/* Mythic Obsidian — section headers & numeric scales */
+/* Mythic Obsidian — section headers & numeric scales
+   Sizes use clamp() tokens (see :root --fs-*) so headlines fluid-scale
+   between mobile (320w) and desktop (1440w+) without text overflow. */
 .mo-section-label {
   font-family: var(--font-display);
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  font-size: var(--fs-label);
+  line-height: 1.2;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent-gold);
-  opacity: 0.85;
+  color: var(--ink-muted);
 }
 .mo-numeric-hero {
   font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
-  font-size: 44px;
+  font-size: var(--fs-hero-xxl);
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em;
   color: var(--accent-gold-bright);
   text-shadow: 0 0 16px rgba(212, 168, 74, 0.3);
 }
 .mo-numeric-lg {
   font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
-  font-size: 24px;
-  line-height: 1.05;
+  font-size: var(--fs-hero-xl);
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--ink-primary);
 }
 .mo-numeric-md {
   font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
-  font-size: 18px;
-  line-height: 1.05;
+  font-size: var(--fs-hero-lg);
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--accent-gold);
 }
 
@@ -2602,3 +2679,120 @@ h3 {
   }
 }
 
+/* ============ MODAL + SECONDARY VIEW UTILITIES (UI refinement pass) ============
+   `.stack`, `.text-truncate`, `.text-clamp-2`, `.min-w-0` live in the top
+   block (~line 295). This section adds modal- and view-specific utilities. */
+
+/* CardModal body — stacked on mobile, image|info split on desktop */
+.cardmodal-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-3, 16px);
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .cardmodal-body {
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--gap-4, 24px);
+    align-items: start;
+  }
+  .cardmodal-body .modal-card-col {
+    width: 100%;
+    max-width: clamp(320px, 36vw, 480px);
+  }
+}
+
+/* CardModal shell — wider on desktop, preserves mobile behavior */
+.cardmodal-shell {
+  max-width: min(1040px, calc(100vw - 48px));
+  margin-inline: auto;
+}
+
+/* Minimum 44px tap target for modal actions */
+.tap-44 {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* SearchModal — responsive results grid */
+.searchmodal-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-2, 10px);
+  padding: 12px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+@media (min-width: 480px) {
+  .searchmodal-results {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+@media (min-width: 768px) {
+  .searchmodal-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+@media (min-width: 1024px) {
+  .searchmodal-results {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Timeline — date rail at desktop */
+.timeline-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 768px) {
+  .timeline-row {
+    grid-template-columns: 12ch minmax(0, 1fr);
+    column-gap: var(--gap-3, 16px);
+    align-items: start;
+  }
+  .timeline-date-rail {
+    font-family: var(--font-display, 'Cinzel', serif);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--accent-gold);
+    padding-top: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+}
+.timeline-date-rail {
+  display: none;
+}
+@media (min-width: 768px) {
+  .timeline-date-rail {
+    display: block;
+  }
+}
+
+/* More — grid at tablet+, 3-col at desktop */
+.more-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-2, 10px);
+}
+@media (min-width: 768px) {
+  .more-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .more-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Searchmodal sheet constraint */
+@media (min-width: 768px) {
+  .searchmodal-sheet {
+    max-width: 720px;
+    margin-inline: auto;
+  }
+}

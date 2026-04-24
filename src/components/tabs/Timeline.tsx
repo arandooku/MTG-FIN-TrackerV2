@@ -110,16 +110,23 @@ export function Timeline() {
                       : 'var(--success)';
                 const action =
                   e.type === 'remove' ? 'Removed' : e.type === 'pack' ? 'Pack Pull' : 'Added';
+                const shortDate = new Date(e.date).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: '2-digit',
+                });
                 return (
+                  <div key={`${e.date}-${e.cn}-${i}`} className="timeline-row" style={{ marginBottom: 6 }}>
+                  <div className="timeline-date-rail" aria-hidden>
+                    {shortDate}
+                  </div>
                   <div
-                    key={`${e.date}-${e.cn}-${i}`}
                     className="mo-ledger-row glass"
                     style={{
-                      marginBottom: 6,
                       padding: '8px 10px 8px 32px',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 10,
+                      minWidth: 0,
                     }}
                   >
                     <span
@@ -194,6 +201,7 @@ export function Timeline() {
                     >
                       {relativeTime(e.date)}
                     </div>
+                  </div>
                   </div>
                 );
               })}

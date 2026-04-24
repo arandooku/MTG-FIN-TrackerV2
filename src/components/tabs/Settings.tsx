@@ -121,6 +121,8 @@ export function Settings() {
         </button>
       </div>
 
+      <div className="stack cols-2">
+      <div className="flex flex-col gap-1.5 min-w-0">
       <Section
         label="Binder Layout"
         icon={<Layers size={16} />}
@@ -139,6 +141,8 @@ export function Settings() {
                   type="button"
                   className={`app-chip ${cfg.binder.presetName === p.name ? 'active' : ''}`}
                   onClick={() => cfg.applyPreset(p.name, main.length || 309)}
+                  title={p.name}
+                  style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 >
                   {p.name}
                 </button>
@@ -208,10 +212,11 @@ export function Settings() {
             <Row icon={<KeyRound size={16} />} label="OCR.space Key">
               <input
                 type="password"
-                className="app-search !p-1.5 max-w-[160px] text-[11px]"
+                className="app-search text-truncate !p-1.5 max-w-[180px]"
                 placeholder="paste key"
                 value={cfg.ocrSpaceKey}
                 onChange={(e) => cfg.setOcrSpaceKey(e.target.value)}
+                style={{ fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))' }}
               />
             </Row>
           )}
@@ -226,6 +231,8 @@ export function Settings() {
         </div>
       </Section>
 
+      </div>
+      <div className="flex flex-col gap-1.5 min-w-0">
       <Section
         label="Cloud Sync"
         icon={<Cloud size={16} />}
@@ -236,19 +243,22 @@ export function Settings() {
           <Row icon={<KeyRound size={16} />} label="GitHub Token">
             <input
               type="password"
-              className="app-search !p-1.5 max-w-[160px] text-[11px]"
+              className="app-search text-truncate !p-1.5 max-w-[180px]"
               placeholder="ghp_…"
               value={sync.token}
               onChange={(e) => sync.setToken(e.target.value)}
+              style={{ fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))' }}
             />
           </Row>
           <Row icon={<Cloud size={16} />} label="Gist ID">
             <input
               type="text"
-              className="app-search !p-1.5 max-w-[160px] text-[11px]"
+              className="app-search text-truncate !p-1.5 max-w-[180px]"
               placeholder="auto-discover"
               value={sync.gistId}
               onChange={(e) => sync.setGistId(e.target.value)}
+              style={{ fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))' }}
+              title={sync.gistId || undefined}
             />
           </Row>
           <Row icon={<RefreshCw size={16} />} label="Auto Push">
@@ -390,6 +400,8 @@ export function Settings() {
           </div>
         </div>
       </Section>
+      </div>
+      </div>
     </div>
   );
 }

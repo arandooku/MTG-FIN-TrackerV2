@@ -497,7 +497,13 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
           {/* Crystal viewfinder — gold L-brackets + animated sweep */}
           <div
             className="mo-view-frame"
-            style={{ aspectRatio: '3 / 4', maxHeight: '60vh' }}
+            style={{
+              aspectRatio: '3 / 4',
+              maxHeight: '60vh',
+              maxWidth: 'min(560px, 100%)',
+              marginInline: 'auto',
+              width: '100%',
+            }}
           >
             <video
               ref={videoRef}
@@ -528,12 +534,19 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
           {/* OCR result card */}
           <div
             className="glass-raised"
-            style={{ padding: '10px 12px', textAlign: 'center' }}
+            style={{
+              padding: '10px 12px',
+              textAlign: 'center',
+              maxWidth: 'min(560px, 100%)',
+              marginInline: 'auto',
+              width: '100%',
+              minWidth: 0,
+            }}
           >
             <div
-              className="text-display"
+              className="text-display text-truncate"
               style={{
-                fontSize: 12,
+                fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
                 letterSpacing: '0.2em',
                 color:
                   statusKind === 'success'
@@ -548,7 +561,11 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
             {lastText && (
               <div
                 className="text-display truncate mt-1"
-                style={{ fontSize: 10, letterSpacing: '0.2em', color: 'var(--ink-subtle)' }}
+                style={{
+                  fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                  letterSpacing: '0.2em',
+                  color: 'var(--ink-subtle)',
+                }}
               >
                 {lastText}
               </div>
@@ -557,7 +574,7 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
               <div
                 className="text-display mt-1"
                 style={{
-                  fontSize: 11,
+                  fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
                   letterSpacing: '0.25em',
                   color: 'var(--accent-gold)',
                 }}
@@ -580,11 +597,15 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
             }}
           />
 
-          <div className="flex gap-2">
+          <div
+            className="flex flex-wrap gap-2"
+            style={{ maxWidth: 'min(560px, 100%)', marginInline: 'auto', width: '100%' }}
+          >
             {showShutter && (
               <button
                 type="button"
                 className="app-btn primary flex-1"
+                style={{ minHeight: 44 }}
                 onClick={() => fileRef.current?.click()}
               >
                 <Camera size={16} /> Take Photo
@@ -593,6 +614,7 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
             <button
               type="button"
               className="app-btn ghost flex-1"
+              style={{ minHeight: 44 }}
               onClick={() => setSearchOpen(true)}
             >
               <Search size={16} /> Search
@@ -600,6 +622,7 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
             <button
               type="button"
               className="app-btn"
+              style={{ minHeight: 44, minWidth: 44 }}
               onClick={resetScanner}
               aria-label="Change engine"
             >
@@ -721,8 +744,8 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
             <div
               className="text-display text-center"
               style={{
-                fontSize: 11,
-                letterSpacing: '0.3em',
+                fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                letterSpacing: '0.22em',
                 color: 'var(--ink-muted)',
                 padding: '12px 0',
               }}
@@ -743,13 +766,13 @@ export function Scan({ onPickCard }: { onPickCard?: (c: CardT) => void }) {
                 <div className="app-price-thumb">
                   <CardImage src={c.image_small} alt={c.name} className="h-full w-full" />
                 </div>
-                <div className="pi">
-                  <div className="pi-name">{c.name}</div>
-                  <div className="pi-sub">
+                <div className="pi min-w-0">
+                  <div className="pi-name text-truncate">{c.name}</div>
+                  <div className="pi-sub text-truncate">
                     FIN · #{c.collector_number} · {c.rarity}
                   </div>
                 </div>
-                <Plus size={20} style={{ color: 'var(--accent-gold)' }} />
+                <Plus size={20} style={{ color: 'var(--accent-gold)', flexShrink: 0 }} />
               </div>
             ))
           )}

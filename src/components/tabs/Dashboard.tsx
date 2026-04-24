@@ -188,7 +188,11 @@ export function Dashboard({ onJumpTo, onPickCard }: DashboardProps) {
       <div className="app-content has-fab-top">
         <div
           className="text-center py-12 text-display"
-          style={{ color: 'var(--ink-muted)', fontSize: 11, letterSpacing: '0.3em' }}
+          style={{
+            color: 'var(--ink-muted)',
+            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+            letterSpacing: '0.22em',
+          }}
         >
           Loading set data…
         </div>
@@ -196,142 +200,224 @@ export function Dashboard({ onJumpTo, onPickCard }: DashboardProps) {
     );
   }
 
+  const ctaGridCols = showCollector ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2';
+
+  const heroBlock = (
+    <div
+      className="glass-raised glow-gold"
+      style={{ padding: '18px 16px 14px', position: 'relative', overflow: 'hidden', minWidth: 0 }}
+    >
+      <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
+        <span className="mo-section-label truncate">FIN Completion</span>
+        <span
+          className="text-display flex-shrink-0 hide-narrow"
+          style={{
+            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+            letterSpacing: '0.22em',
+            color: 'var(--accent-gold)',
+            padding: '3px 8px',
+            border: '1px solid var(--border-hair)',
+            borderRadius: 3,
+          }}
+        >
+          Final Fantasy · FIN
+        </span>
+      </div>
+      <div className="flex items-end justify-between gap-3 min-w-0">
+        <div className="mo-numeric-hero" style={{ minWidth: 0 }}>
+          <CountUp to={stats.pct} format={(v) => `${v.toFixed(0)}%`} />
+        </div>
+        <div className="text-right pb-2 min-w-0">
+          <div
+            className="text-numeric truncate"
+            style={{
+              color: 'var(--ink-primary)',
+              fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
+            }}
+          >
+            <CountUp to={stats.uniqueOwned} />
+            <span style={{ color: 'var(--ink-subtle)' }}> / {stats.total}</span>
+          </div>
+          <div
+            className="text-display mt-0.5 truncate"
+            style={{
+              fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+              letterSpacing: '0.22em',
+              color: 'var(--ink-muted)',
+            }}
+          >
+            Unique Cards
+          </div>
+        </div>
+      </div>
+      <div className="app-progress mt-3 mb-3">
+        <div className="app-progress-fill" style={{ width: `${stats.pct}%` }} />
+      </div>
+      <div className="flex gap-1.5 flex-wrap">
+        {COLORS.map((col) => {
+          const { o, t } = stats.byColor[col];
+          const pct = t ? Math.round((o / t) * 100) : 0;
+          return (
+            <div key={col} className="app-pipstat">
+              <ManaPip color={col.toLowerCase() as 'w' | 'u' | 'b' | 'r' | 'g'} label={col} />
+              <span>{pct}%</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const portfolioStrip = (
+    <div
+      className="glass-raised"
+      style={{
+        padding: '12px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        minWidth: 0,
+      }}
+    >
+      <div className="min-w-0">
+        <div className="mo-section-label truncate">Portfolio · {currency}</div>
+        <div
+          className="mo-numeric-lg mt-1 truncate"
+          style={{ color: 'var(--accent-gold-bright)', minWidth: 0 }}
+        >
+          <CountUp to={stats.valueUsd} format={fmt} />
+        </div>
+      </div>
+      {weekDelta && (
+        <span
+          className="text-display flex items-center gap-1 flex-shrink-0"
+          style={{
+            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+            letterSpacing: '0.2em',
+            color: weekDelta.up ? 'var(--success)' : 'var(--danger)',
+          }}
+        >
+          {weekDelta.up ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+          {weekDelta.up ? '+' : ''}
+          {weekDelta.pct.toFixed(1)}%
+          <span style={{ color: 'var(--ink-subtle)', marginLeft: 4 }}>7D</span>
+        </span>
+      )}
+    </div>
+  );
+
+  const ctaRow = (
+    <div className={`grid ${ctaGridCols} gap-2`}>
+      <button type="button" className="app-btn" onClick={() => onJumpTo('binder')}>
+        <Layers size={16} /> Binder
+      </button>
+      {showCollector && (
+        <button type="button" className="app-btn" onClick={() => onJumpTo('collector')}>
+          <Gem size={16} /> Collector
+        </button>
+      )}
+      <button type="button" className="app-btn primary" onClick={() => onJumpTo('scan')}>
+        <ScanLine size={16} /> Scan
+      </button>
+    </div>
+  );
+
+  const statGrid = (
+    <div className="grid grid-cols-2 gap-2">
+      <QuickTile
+        icon={<Box size={16} />}
+        label="Unique"
+        value={<CountUp to={stats.uniqueOwned} />}
+        sub={`of ${stats.total}`}
+      />
+      <QuickTile
+        icon={<Copy size={16} />}
+        label="Copies"
+        value={<CountUp to={stats.totalCopies} />}
+        sub="owned"
+      />
+      <QuickTile
+        icon={<Package size={16} />}
+        label="Packs"
+        value={<CountUp to={packs.length} />}
+        sub="opened"
+      />
+      <QuickTile
+        icon={<Crown size={16} />}
+        label="Apex"
+        value={highestCard ? fmt(highestCard.price_usd ?? 0) : '—'}
+        sub={highestCard ? truncate(highestCard.name, 14) : 'none yet'}
+        onClick={highestCard ? () => onPickCard(highestCard) : undefined}
+      />
+    </div>
+  );
+
+  const rarityBlock = (
+    <div className="glass-raised" style={{ padding: '14px', minWidth: 0 }}>
+      <div className="flex items-center justify-between mb-2 min-w-0">
+        <span className="mo-section-label truncate">Rarity Breakdown</span>
+        <Gem size={16} style={{ color: 'var(--accent-gold)', opacity: 0.7, flexShrink: 0 }} />
+      </div>
+      <div className="flex flex-col gap-2">
+        {RARITIES.map((r) => {
+          const { o, t } = stats.byRarity[r];
+          const pct = t ? (o / t) * 100 : 0;
+          return (
+            <div key={r} className="flex items-center gap-2 min-w-0">
+              <span
+                className="text-display flex-shrink-0"
+                style={{
+                  fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                  letterSpacing: '0.22em',
+                  color: RARITY_COLOR[r],
+                  width: 68,
+                }}
+              >
+                {RARITY_LABEL[r]}
+              </span>
+              <div className="app-progress flex-1 min-w-0" style={{ height: 5 }}>
+                <div
+                  className="app-progress-fill"
+                  style={{
+                    width: `${pct}%`,
+                    background: RARITY_COLOR[r],
+                    opacity: 0.85,
+                  }}
+                />
+              </div>
+              <span
+                className="text-numeric flex-shrink-0"
+                style={{
+                  color: 'var(--ink-secondary)',
+                  fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
+                  width: 58,
+                  textAlign: 'right',
+                }}
+              >
+                {o}
+                <span style={{ color: 'var(--ink-subtle)' }}> / {t}</span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <div className={`app-content has-fab-top ${expanded ? 'scroll' : ''}`}>
-      {/* HERO — Completion % dominant tile (editorial, gold-accented) */}
-      <div
-        className="glass-raised glow-gold"
-        style={{ padding: '18px 16px 14px', position: 'relative', overflow: 'hidden' }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <span className="mo-section-label">FIN Completion</span>
-          <span
-            className="text-display"
-            style={{
-              fontSize: 9,
-              letterSpacing: '0.3em',
-              color: 'var(--accent-gold)',
-              padding: '3px 8px',
-              border: '1px solid var(--border-hair)',
-              borderRadius: 3,
-            }}
-          >
-            Final Fantasy · FIN
-          </span>
+      {/* Editorial split: HERO + Portfolio + CTA on the left, stat grid (+ rarity when expanded) on the right at >=1024 */}
+      <div className="stack desktop-wide">
+        <div className="flex flex-col gap-3 min-w-0">
+          {heroBlock}
+          {portfolioStrip}
+          {ctaRow}
         </div>
-        <div className="flex items-end justify-between gap-3">
-          <div className="mo-numeric-hero">
-            <CountUp to={stats.pct} format={(v) => `${v.toFixed(0)}%`} />
-          </div>
-          <div className="text-right pb-2">
-            <div
-              className="text-numeric"
-              style={{ color: 'var(--ink-primary)', fontSize: 15 }}
-            >
-              <CountUp to={stats.uniqueOwned} />
-              <span style={{ color: 'var(--ink-subtle)' }}> / {stats.total}</span>
-            </div>
-            <div
-              className="text-display mt-0.5"
-              style={{
-                fontSize: 8,
-                letterSpacing: '0.3em',
-                color: 'var(--ink-muted)',
-              }}
-            >
-              Unique Cards
-            </div>
-          </div>
+        <div className="flex flex-col gap-3 min-w-0">
+          {statGrid}
+          {expanded && rarityBlock}
         </div>
-        <div className="app-progress mt-3 mb-3">
-          <div className="app-progress-fill" style={{ width: `${stats.pct}%` }} />
-        </div>
-        <div className="flex gap-1.5 flex-wrap">
-          {COLORS.map((col) => {
-            const { o, t } = stats.byColor[col];
-            const pct = t ? Math.round((o / t) * 100) : 0;
-            return (
-              <div key={col} className="app-pipstat">
-                <ManaPip color={col.toLowerCase() as 'w' | 'u' | 'b' | 'r' | 'g'} label={col} />
-                <span>{pct}%</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="ornate-hr" />
-
-      {/* STAT GRID — asymmetric 2x2 smaller tiles */}
-      <div className="grid grid-cols-2 gap-2">
-        <QuickTile
-          icon={<Box size={16} />}
-          label="Unique"
-          value={<CountUp to={stats.uniqueOwned} />}
-          sub={`of ${stats.total}`}
-        />
-        <QuickTile
-          icon={<Copy size={16} />}
-          label="Copies"
-          value={<CountUp to={stats.totalCopies} />}
-          sub="owned"
-        />
-        <QuickTile
-          icon={<Package size={16} />}
-          label="Packs"
-          value={<CountUp to={packs.length} />}
-          sub="opened"
-        />
-        <QuickTile
-          icon={<Crown size={16} />}
-          label="Apex"
-          value={highestCard ? fmt(highestCard.price_usd ?? 0) : '—'}
-          sub={highestCard ? truncate(highestCard.name, 14) : 'none yet'}
-          onClick={highestCard ? () => onPickCard(highestCard) : undefined}
-        />
-      </div>
-
-      {/* PORTFOLIO VALUE STRIP */}
-      <div
-        className="glass-raised"
-        style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-      >
-        <div>
-          <div className="mo-section-label">Portfolio · {currency}</div>
-          <div className="mo-numeric-lg mt-1" style={{ color: 'var(--accent-gold-bright)' }}>
-            <CountUp to={stats.valueUsd} format={fmt} />
-          </div>
-        </div>
-        {weekDelta && (
-          <span
-            className="text-display flex items-center gap-1"
-            style={{
-              fontSize: 10,
-              letterSpacing: '0.2em',
-              color: weekDelta.up ? 'var(--success)' : 'var(--danger)',
-            }}
-          >
-            {weekDelta.up ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-            {weekDelta.up ? '+' : ''}
-            {weekDelta.pct.toFixed(1)}%
-            <span style={{ color: 'var(--ink-subtle)', marginLeft: 4 }}>7D</span>
-          </span>
-        )}
-      </div>
-
-      {/* CTA */}
-      <div className="flex gap-2">
-        <button type="button" className="app-btn flex-1" onClick={() => onJumpTo('binder')}>
-          <Layers size={16} /> Binder
-        </button>
-        {showCollector && (
-          <button type="button" className="app-btn flex-1" onClick={() => onJumpTo('collector')}>
-            <Gem size={16} /> Collector
-          </button>
-        )}
-        <button type="button" className="app-btn primary flex-1" onClick={() => onJumpTo('scan')}>
-          <ScanLine size={16} /> Scan
-        </button>
       </div>
 
       {/* TOGGLE */}
@@ -355,12 +441,16 @@ export function Dashboard({ onJumpTo, onPickCard }: DashboardProps) {
         <>
           <div className="ornate-hr" />
 
-          <div className="glass-raised" style={{ padding: '14px 14px 10px' }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="mo-section-label">Value Trend</span>
+          <div className="glass-raised" style={{ padding: '14px 14px 10px', minWidth: 0 }}>
+            <div className="flex items-center justify-between mb-2 min-w-0">
+              <span className="mo-section-label truncate">Value Trend</span>
               <span
-                className="text-display"
-                style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--ink-muted)' }}
+                className="text-display flex-shrink-0"
+                style={{
+                  fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                  letterSpacing: '0.2em',
+                  color: 'var(--ink-muted)',
+                }}
               >
                 {currency}
               </span>
@@ -370,240 +460,202 @@ export function Dashboard({ onJumpTo, onPickCard }: DashboardProps) {
             </SparklineReveal>
           </div>
 
-          <div className="glass-raised" style={{ padding: '14px' }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="mo-section-label">Rarity Breakdown</span>
-              <Gem size={16} style={{ color: 'var(--accent-gold)', opacity: 0.7 }} />
-            </div>
-            <div className="flex flex-col gap-2">
-              {RARITIES.map((r) => {
-                const { o, t } = stats.byRarity[r];
-                const pct = t ? (o / t) * 100 : 0;
-                return (
-                  <div key={r} className="flex items-center gap-2">
-                    <span
-                      className="text-display"
-                      style={{
-                        fontSize: 9,
-                        letterSpacing: '0.25em',
-                        color: RARITY_COLOR[r],
-                        width: 68,
-                      }}
-                    >
-                      {RARITY_LABEL[r]}
-                    </span>
-                    <div className="app-progress flex-1" style={{ height: 5 }}>
-                      <div
-                        className="app-progress-fill"
-                        style={{
-                          width: `${pct}%`,
-                          background: RARITY_COLOR[r],
-                          opacity: 0.85,
-                        }}
-                      />
-                    </div>
-                    <span
-                      className="text-numeric"
-                      style={{
-                        color: 'var(--ink-secondary)',
-                        fontSize: 11,
-                        width: 58,
-                        textAlign: 'right',
-                      }}
-                    >
-                      {o}
-                      <span style={{ color: 'var(--ink-subtle)' }}> / {t}</span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {topValued.length > 0 && (
-            <div className="glass-raised" style={{ padding: '14px' }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="mo-section-label">Top Valued</span>
-                <span
-                  className="text-display"
-                  style={{ fontSize: 9, letterSpacing: '0.25em', color: 'var(--ink-muted)' }}
-                >
-                  Top 5
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                {topValued.map((c, i) => (
-                  <button
-                    key={c.collector_number}
-                    type="button"
-                    onClick={() => onPickCard(c)}
-                    className="flex items-center gap-2.5 text-left py-1 px-1 rounded-sm transition-colors hover:bg-white/[0.04]"
+          <div className="stack cols-2">
+            {topValued.length > 0 && (
+              <div className="glass-raised" style={{ padding: '14px', minWidth: 0 }}>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <span className="mo-section-label truncate">Top Valued</span>
+                  <span
+                    className="text-display flex-shrink-0"
+                    style={{
+                      fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                      letterSpacing: '0.22em',
+                      color: 'var(--ink-muted)',
+                    }}
                   >
-                    <span
-                      className="text-display"
+                    Top 5
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {topValued.map((c, i) => (
+                    <button
+                      key={c.collector_number}
+                      type="button"
+                      onClick={() => onPickCard(c)}
+                      className="flex items-center gap-2.5 text-left py-1 px-1 rounded-sm transition-colors hover:bg-white/[0.04] min-w-0"
+                    >
+                      <span
+                        className="text-display flex-shrink-0"
+                        style={{
+                          fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                          letterSpacing: '0.2em',
+                          color: 'var(--accent-gold)',
+                          opacity: 0.7,
+                          width: 16,
+                          textAlign: 'center',
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      <div style={{ width: 30, flexShrink: 0 }}>
+                        <CardThumb card={c} onClick={() => onPickCard(c)} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          style={{
+                            color: 'var(--ink-primary)',
+                            fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
+                            fontFamily: 'var(--font-body)',
+                          }}
+                          className="truncate"
+                        >
+                          {c.name}
+                        </div>
+                        <div
+                          className="text-display truncate"
+                          style={{
+                            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                            letterSpacing: '0.2em',
+                            color: 'var(--ink-muted)',
+                          }}
+                        >
+                          #{c.collector_number} · {c.rarity}
+                        </div>
+                      </div>
+                      <span
+                        className="text-numeric flex-shrink-0"
+                        style={{
+                          color: 'var(--accent-gold-bright)',
+                          fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
+                        }}
+                      >
+                        {fmt(c.price_usd ?? 0)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 min-w-0">
+              <div className="glass-raised" style={{ padding: '14px', minWidth: 0 }}>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <span className="mo-section-label truncate">Recently Added</span>
+                  <button
+                    type="button"
+                    className="text-display flex-shrink-0"
+                    style={{
+                      fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                      letterSpacing: '0.22em',
+                      color: 'var(--accent-gold)',
+                    }}
+                    onClick={() => onJumpTo('binder')}
+                  >
+                    see all ›
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {Array.from({ length: 4 }).map((_, i) => {
+                    const c = recent[i];
+                    return c ? (
+                      <CardThumb key={c.collector_number} card={c} onClick={() => onPickCard(c)} />
+                    ) : (
+                      <CardThumb key={`empty-${i}`} empty />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {activity.length > 0 && (
+                <div className="glass-raised" style={{ padding: '14px', minWidth: 0 }}>
+                  <div className="flex items-center justify-between mb-2 min-w-0">
+                    <span className="mo-section-label truncate">Activity Pulse</span>
+                    <button
+                      type="button"
+                      className="text-display flex-shrink-0"
                       style={{
-                        fontSize: 10,
-                        letterSpacing: '0.2em',
+                        fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                        letterSpacing: '0.22em',
                         color: 'var(--accent-gold)',
-                        opacity: 0.7,
-                        width: 16,
-                        textAlign: 'center',
                       }}
+                      onClick={() => onJumpTo('timeline')}
                     >
-                      {i + 1}
-                    </span>
-                    <div style={{ width: 30, flexShrink: 0 }}>
-                      <CardThumb card={c} onClick={() => onPickCard(c)} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div
-                        style={{
-                          color: 'var(--ink-primary)',
-                          fontSize: 12,
-                          fontFamily: 'var(--font-body)',
-                        }}
-                        className="truncate"
+                      timeline ›
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {activity.map(({ event, card }, i) => (
+                      <button
+                        key={`${event.date}-${i}`}
+                        type="button"
+                        disabled={!card}
+                        onClick={() => card && onPickCard(card)}
+                        className="flex items-center gap-2.5 text-left py-1.5 px-1 rounded-sm transition-colors hover:bg-white/[0.04] disabled:cursor-default disabled:hover:bg-transparent min-w-0"
                       >
-                        {c.name}
-                      </div>
-                      <div
-                        className="text-display"
-                        style={{
-                          fontSize: 9,
-                          letterSpacing: '0.2em',
-                          color: 'var(--ink-muted)',
-                        }}
-                      >
-                        #{c.collector_number} · {c.rarity}
-                      </div>
-                    </div>
-                    <span
-                      className="text-numeric"
-                      style={{ color: 'var(--accent-gold-bright)', fontSize: 12 }}
-                    >
-                      {fmt(c.price_usd ?? 0)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="glass-raised" style={{ padding: '14px' }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="mo-section-label">Recently Added</span>
-              <button
-                type="button"
-                className="text-display"
-                style={{
-                  fontSize: 10,
-                  letterSpacing: '0.25em',
-                  color: 'var(--accent-gold)',
-                }}
-                onClick={() => onJumpTo('binder')}
-              >
-                see all ›
-              </button>
-            </div>
-            <div className="grid grid-cols-4 gap-1.5">
-              {Array.from({ length: 4 }).map((_, i) => {
-                const c = recent[i];
-                return c ? (
-                  <CardThumb key={c.collector_number} card={c} onClick={() => onPickCard(c)} />
-                ) : (
-                  <CardThumb key={`empty-${i}`} empty />
-                );
-              })}
+                        <span
+                          aria-hidden
+                          className="flex-shrink-0"
+                          style={{
+                            width: 20,
+                            height: 20,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color:
+                              event.type === 'remove'
+                                ? 'var(--danger)'
+                                : event.type === 'pack'
+                                  ? 'var(--accent-crystal)'
+                                  : 'var(--success)',
+                          }}
+                        >
+                          {event.type === 'add' && <Plus size={16} />}
+                          {event.type === 'remove' && <Minus size={16} />}
+                          {event.type === 'pack' && <Sparkles size={16} />}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div
+                            style={{
+                              color: 'var(--ink-primary)',
+                              fontSize: 'var(--fs-body, clamp(0.85rem, 1.2vw, 0.95rem))',
+                              fontFamily: 'var(--font-body)',
+                            }}
+                            className="truncate"
+                          >
+                            {card ? card.name : `#${event.cn}`}
+                          </div>
+                          <div
+                            className="text-display truncate"
+                            style={{
+                              fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                              letterSpacing: '0.2em',
+                              color: 'var(--ink-muted)',
+                            }}
+                          >
+                            {event.type === 'pack'
+                              ? 'Pulled from pack'
+                              : event.type === 'add'
+                                ? 'Added to collection'
+                                : 'Removed'}
+                          </div>
+                        </div>
+                        <span
+                          className="text-display flex-shrink-0"
+                          style={{
+                            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+                            letterSpacing: '0.2em',
+                            color: 'var(--ink-muted)',
+                          }}
+                        >
+                          {relativeTime(event.date)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
-          {activity.length > 0 && (
-            <div className="glass-raised" style={{ padding: '14px' }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="mo-section-label">Activity Pulse</span>
-                <button
-                  type="button"
-                  className="text-display"
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: '0.25em',
-                    color: 'var(--accent-gold)',
-                  }}
-                  onClick={() => onJumpTo('timeline')}
-                >
-                  timeline ›
-                </button>
-              </div>
-              <div className="flex flex-col gap-1">
-                {activity.map(({ event, card }, i) => (
-                  <button
-                    key={`${event.date}-${i}`}
-                    type="button"
-                    disabled={!card}
-                    onClick={() => card && onPickCard(card)}
-                    className="flex items-center gap-2.5 text-left py-1.5 px-1 rounded-sm transition-colors hover:bg-white/[0.04] disabled:cursor-default disabled:hover:bg-transparent"
-                  >
-                    <span
-                      aria-hidden
-                      style={{
-                        width: 20,
-                        height: 20,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color:
-                          event.type === 'remove'
-                            ? 'var(--danger)'
-                            : event.type === 'pack'
-                              ? 'var(--accent-crystal)'
-                              : 'var(--success)',
-                      }}
-                    >
-                      {event.type === 'add' && <Plus size={16} />}
-                      {event.type === 'remove' && <Minus size={16} />}
-                      {event.type === 'pack' && <Sparkles size={16} />}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div
-                        style={{
-                          color: 'var(--ink-primary)',
-                          fontSize: 12,
-                          fontFamily: 'var(--font-body)',
-                        }}
-                        className="truncate"
-                      >
-                        {card ? card.name : `#${event.cn}`}
-                      </div>
-                      <div
-                        className="text-display"
-                        style={{
-                          fontSize: 9,
-                          letterSpacing: '0.2em',
-                          color: 'var(--ink-muted)',
-                        }}
-                      >
-                        {event.type === 'pack'
-                          ? 'Pulled from pack'
-                          : event.type === 'add'
-                            ? 'Added to collection'
-                            : 'Removed'}
-                      </div>
-                    </div>
-                    <span
-                      className="text-display"
-                      style={{
-                        fontSize: 10,
-                        letterSpacing: '0.2em',
-                        color: 'var(--ink-muted)',
-                      }}
-                    >
-                      {relativeTime(event.date)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           <GoldDivider />
         </>
@@ -623,16 +675,28 @@ interface QuickTileProps {
 function QuickTile({ icon, label, value, sub, onClick }: QuickTileProps) {
   const inner = (
     <>
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span style={{ color: 'var(--accent-gold)', opacity: 0.85 }}>{icon}</span>
-        <span className="mo-section-label" style={{ fontSize: 9, letterSpacing: '0.25em' }}>
+      <div className="flex items-center gap-1.5 mb-1.5 min-w-0">
+        <span style={{ color: 'var(--accent-gold)', opacity: 0.85, flexShrink: 0 }}>{icon}</span>
+        <span
+          className="mo-section-label truncate"
+          style={{
+            fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+            letterSpacing: '0.22em',
+          }}
+        >
           {label}
         </span>
       </div>
-      <div className="mo-numeric-md">{value}</div>
+      <div className="mo-numeric-md truncate" style={{ minWidth: 0 }}>
+        {value}
+      </div>
       <div
         className="text-display mt-0.5 truncate"
-        style={{ fontSize: 9, letterSpacing: '0.2em', color: 'var(--ink-muted)' }}
+        style={{
+          fontSize: 'var(--fs-label, clamp(0.625rem, 0.9vw, 0.75rem))',
+          letterSpacing: '0.2em',
+          color: 'var(--ink-muted)',
+        }}
       >
         {sub}
       </div>
@@ -640,6 +704,7 @@ function QuickTile({ icon, label, value, sub, onClick }: QuickTileProps) {
   );
   const baseStyle: React.CSSProperties = {
     padding: 12,
+    minWidth: 0,
   };
   if (onClick) {
     return (

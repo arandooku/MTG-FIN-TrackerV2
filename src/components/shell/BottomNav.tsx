@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { TabKey } from '@/App';
 import { useConfigStore } from '@/store/config';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { toast } from '@/store/toast';
 
 interface BottomNavProps {
@@ -48,9 +49,16 @@ export function BottomNav({ active, onChange, onSearch }: BottomNavProps) {
   const collectorOn = useConfigStore((s) => s.binder.scope.collectorBinder);
   const reduceMotion = useReducedMotion();
   const isSideRail = useIsSideRail();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isNarrow = useMediaQuery('(max-width: 400px)');
   const spring = reduceMotion
     ? { type: 'tween' as const, duration: 0.18 }
     : { type: 'spring' as const, stiffness: 380, damping: 30 };
+
+  const tabIconSize = isDesktop ? 24 : isNarrow ? 24 : 22;
+  const tabLabelSize = isDesktop ? 11 : 10;
+  const searchBtnSize = isDesktop ? 60 : 56;
+  const showLabel = !isNarrow;
 
   const navStyle: CSSProperties = isSideRail
     ? {
@@ -79,9 +87,11 @@ export function BottomNav({ active, onChange, onSearch }: BottomNavProps) {
         left: '50%',
         bottom: 'max(16px, env(safe-area-inset-bottom))',
         transform: 'translateX(-50%)',
-        width: 'calc(100% - 32px)',
-        maxWidth: 480,
-        padding: '8px 6px',
+        // Cap pill width: 600 on desktop, never wider than viewport - 32.
+        // The hard cap of 640 below ensures nav never grows past it.
+        width: 'min(600px, calc(100% - 32px))',
+        maxWidth: 640,
+        padding: isDesktop ? '10px 8px' : '8px 6px',
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr) 64px repeat(3, 1fr)',
         alignItems: 'center',
@@ -152,23 +162,25 @@ export function BottomNav({ active, onChange, onSearch }: BottomNavProps) {
           animate={{ scale: isActive && !reduceMotion ? 1.12 : 1 }}
           transition={spring}
         >
-          <Icon size={22} strokeWidth={1.6} />
+          <Icon size={tabIconSize} strokeWidth={1.6} />
         </motion.span>
-        <span
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            fontFamily: 'var(--app-ui)',
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: '0.16em',
-            textTransform: 'uppercase',
-            marginTop: 2,
-            color: isActive ? 'var(--app-crystal)' : undefined,
-          }}
-        >
-          {t.label}
-        </span>
+        {showLabel && (
+          <span
+            style={{
+              position: 'relative',
+              zIndex: 1,
+              fontFamily: 'var(--app-ui)',
+              fontSize: tabLabelSize,
+              fontWeight: 600,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              marginTop: 2,
+              color: isActive ? 'var(--app-crystal)' : undefined,
+            }}
+          >
+            {t.label}
+          </span>
+        )}
       </button>
     );
   };
@@ -186,8 +198,8 @@ export function BottomNav({ active, onChange, onSearch }: BottomNavProps) {
       style={{
         justifySelf: 'center',
         alignSelf: 'center',
-        width: isSideRail ? 60 : 56,
-        height: isSideRail ? 60 : 56,
+        width: isSideRail ? 60 : searchBtnSize,
+        height: isSideRail ? 60 : searchBtnSize,
         borderRadius: '50%',
         display: 'inline-flex',
         alignItems: 'center',
@@ -205,7 +217,7 @@ export function BottomNav({ active, onChange, onSearch }: BottomNavProps) {
         zIndex: 2,
       }}
     >
-      <Search size={isSideRail ? 24 : 22} strokeWidth={2} />
+      <Search size={isSideRail ? 24 : isDesktop ? 24 : 22} strokeWidth={2} />
     </motion.button>
   );
 

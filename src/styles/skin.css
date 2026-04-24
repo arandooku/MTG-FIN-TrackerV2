@@ -178,20 +178,21 @@ h4 {
     margin-right: auto;
   }
 }
-@media (min-width: 1024px) {
-  .app-content {
-    /* Clear the bottom-pill nav on desktop too. */
-    padding-bottom: 110px;
-  }
-}
+/* Single authoritative .app-content rule. Tokens (--nav-clearance,
+   --content-max, --gap-*) come from globals.css :root. Width/min-width
+   guarantee child grids can shrink and truncate properly. */
 .app-content {
   flex: 1;
-  padding: 14px 10px 96px;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: 14px 10px var(--nav-clearance);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--gap-3);
   min-height: 0;
+  min-width: 0;
 }
 .app-content.scroll {
   overflow-y: auto;

@@ -48,7 +48,7 @@ export function More({ onPick, onOpenPack }: MoreProps) {
       </div>
 
       <SectionHeader>Navigate</SectionHeader>
-      <div className="flex flex-col gap-1.5">
+      <div className="more-grid">
         <MoreRow
           icon={<Clock size={20} />}
           label="Timeline"
@@ -67,7 +67,7 @@ export function More({ onPick, onOpenPack }: MoreProps) {
       </div>
 
       <SectionHeader>Display</SectionHeader>
-      <div className="flex flex-col gap-1.5">
+      <div className="more-grid">
         <MoreRow
           icon={mode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           label={mode === 'dark' ? 'Light Theme' : 'Dark Theme'}
@@ -76,14 +76,15 @@ export function More({ onPick, onOpenPack }: MoreProps) {
       </div>
 
       <SectionHeader>Links</SectionHeader>
-      <div className="flex flex-col gap-1.5">
+      <div className="more-grid">
         <a
           href="https://scryfall.com/sets/fin"
           target="_blank"
           rel="noreferrer"
           className="glass flex items-center gap-3"
           style={{
-            padding: '12px 14px',
+            padding: '14px 16px',
+            minHeight: 56,
             textDecoration: 'none',
             color: 'inherit',
           }}
@@ -92,7 +93,7 @@ export function More({ onPick, onOpenPack }: MoreProps) {
             <ExternalLink size={20} />
           </span>
           <span
-            className="text-display flex-1"
+            className="text-display text-truncate flex-1"
             style={{
               fontSize: 12,
               letterSpacing: '0.22em',
@@ -135,14 +136,14 @@ function MoreRow({ icon, label, onClick }: MoreRowProps) {
     <button
       type="button"
       className="glass flex items-center gap-3 w-full text-left transition-colors hover:border-[var(--border-glow)]"
-      style={{ padding: '12px 14px' }}
+      style={{ padding: '14px 16px', minHeight: 56 }}
       onClick={onClick}
     >
       <span style={{ color: 'var(--accent-gold)', display: 'inline-flex' }}>
         {icon}
       </span>
       <span
-        className="text-display flex-1"
+        className="text-display text-truncate flex-1"
         style={{
           fontSize: 12,
           letterSpacing: '0.22em',
