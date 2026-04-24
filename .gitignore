@@ -23,3 +23,8 @@ Thumbs.db
 .claude/
 .superpowers/
 reference/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
